@@ -1,0 +1,15 @@
+name: forge-protocol
+version: 0.1.0
+description: "Cognitive anti-deskilling framework — 4 interaction modes (Forge, Anvil, Furnace, Executor) that protect human thinking skills when working with AI."
+author: Forge Protocol Contributors
+provides_tools:
+  - forge_validate_input
+  - forge_validate_output
+  - forge_checkpoint
+  - forge_get_state
+  - forge_set_mode
+  - forge_log
+provides_hooks:
+  - pre_tool_call
+  - on_session_start
+  - on_session_end

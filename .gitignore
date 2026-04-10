@@ -1,0 +1,39 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Forge Protocol state (user-specific, never commit)
+.forge-state/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/

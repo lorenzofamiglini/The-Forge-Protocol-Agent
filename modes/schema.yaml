@@ -1,0 +1,135 @@
+# Forge Protocol Mode Definition Schema
+# Reference only — not validated at runtime. See lib/modes.py for the parser.
+# Use this as a guide when creating custom modes.
+
+type: object
+required:
+  - id
+  - name
+  - description
+  - system_prompt_file
+  - behaviors
+  - input_requirements
+  - output_validation
+  - metacognitive
+
+properties:
+  id:
+    type: string
+    description: Unique mode identifier (lowercase, no spaces)
+    pattern: "^[a-z][a-z0-9_-]*$"
+
+  name:
+    type: string
+    description: Human-readable mode name
+
+  description:
+    type: string
+    description: One-line description of the mode's purpose
+
+  system_prompt_file:
+    type: string
+    description: Relative path to the SOUL/system prompt markdown file
+
+  behaviors:
+    type: object
+    required:
+      - required
+      - forbidden
+    properties:
+      required:
+        type: array
+        items:
+          type: string
+        description: Behaviors the LLM MUST exhibit in this mode
+      forbidden:
+        type: array
+        items:
+          type: string
+        description: Behaviors the LLM MUST NOT exhibit in this mode
+
+  input_requirements:
+    type: object
+    properties:
+      min_sentences:
+        type: integer
+        default: 0
+        description: Minimum sentences user must write before LLM responds
+      require_draft:
+        type: boolean
+        default: false
+        description: User must submit a draft (prose or code) before LLM responds
+      require_ideas_count:
+        type: integer
+        default: 0
+        description: Minimum number of distinct ideas user must provide
+
+  output_validation:
+    type: object
+    properties:
+      deny_patterns:
+        type: array
+        items:
+          type: object
+          required:
+            - id
+            - pattern
+            - reason
+          properties:
+            id:
+              type: string
+            pattern:
+              type: string
+              description: Regex pattern; if output matches, it violates the mode
+            reason:
+              type: string
+      require_patterns:
+        type: array
+        items:
+          type: object
+          required:
+            - id
+            - pattern
+            - reason
+          properties:
+            id:
+              type: string
+            pattern:
+              type: string
+              description: Regex pattern; output MUST contain a match
+            reason:
+              type: string
+
+  metacognitive:
+    type: object
+    properties:
+      checkpoint_interval:
+        type: integer
+        default: 0
+        description: Inject a metacognitive prompt every N messages (0 = disabled)
+      prompts:
+        type: array
+        items:
+          type: string
+        description: Pool of metacognitive prompts to rotate through
+      session_end_prompt:
+        type: string
+        description: Prompt shown when the user ends a session in this mode
+
+  transitions:
+    type: object
+    properties:
+      allowed_from:
+        type: array
+        items:
+          type: string
+        description: Modes that can transition INTO this mode
+      allowed_to:
+        type: array
+        items:
+          type: string
+        description: Modes this mode can transition TO
+      confirm_switch:
+        type: boolean
+        default: false
+        description: Require user confirmation before switching away

@@ -1,0 +1,31 @@
+id: executor
+name: "Executor Mode"
+description: "Standard automation — no friction, full LLM capability for mechanical tasks"
+
+system_prompt_file: "souls/executor.md"
+
+behaviors:
+  required:
+    - "Execute tasks efficiently with full capability"
+    - "Provide direct, actionable output"
+  forbidden: []
+
+input_requirements:
+  min_sentences: 0
+  require_draft: false
+  require_ideas_count: 0
+
+
+output_validation:
+  deny_patterns: []
+  require_patterns: []
+
+metacognitive:
+  checkpoint_interval: 0
+  prompts: []
+  session_end_prompt: ""
+
+transitions:
+  allowed_from: ["forge", "anvil", "furnace"]
+  allowed_to: ["forge", "anvil", "furnace"]
+  confirm_switch: false
