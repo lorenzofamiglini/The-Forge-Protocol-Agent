@@ -313,7 +313,7 @@ def audit_output(
             violations=[],
             auditor_model=model,
             raw_response="",
-            error=f"{type(e).__name__}: {e}",
+            error=type(e).__name__,
         )
 
 
@@ -362,7 +362,7 @@ def audit_input(
             violations=[],
             auditor_model=model,
             raw_response="",
-            error=f"{type(e).__name__}: {e}",
+            error=type(e).__name__,
         )
 
 
@@ -407,5 +407,5 @@ def score_canary(
             dimensions={},
             notes="",
             auditor_model=model,
-            error=f"{type(e).__name__}: {e}",
+            error=type(e).__name__,
         )
