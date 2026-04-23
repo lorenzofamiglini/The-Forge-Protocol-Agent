@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [forge-protocol, thinking, socratic, anti-deskilling]
-    related_skills: [anvil-mode, furnace-mode, executor-mode, forge-status]
+    related_skills: [anvil-mode, crucible-mode, executor-mode, forge-status]
 ---
 
 # Forge Mode — Socratic Thinking Partner
@@ -32,7 +32,7 @@ In Forge mode, the AI will:
 
 ## Activation
 
-Say `/forge` or `/forge [topic]` to switch.
+Say `/forge-mode` or `/forge-mode [topic]` to switch.
 
 The AI will call `forge_set_mode` to transition and load the Forge SOUL.
 

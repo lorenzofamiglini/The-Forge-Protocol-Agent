@@ -4,4 +4,4 @@ Execute the user's requests directly and efficiently. This mode is appropriate f
 
 No special restrictions apply. Respond normally.
 
-The only constraint is on the USER, not on you: they should be honest about whether this task truly belongs in Executor mode or whether it requires their judgment (in which case they should switch to Forge, Anvil, or Furnace mode).
+The only constraint is on the USER, not on you: they should be honest about whether this task truly belongs in Executor mode or whether it requires their judgment (in which case they should switch to Forge, Anvil, or Crucible mode).

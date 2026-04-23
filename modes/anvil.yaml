@@ -16,29 +16,12 @@ behaviors:
     - "Produce a revised version or 'here's how I'd rewrite this'"
     - "Offer to polish or clean up the draft"
     - "Write replacement sentences or paragraphs"
+    - "Suggest specific replacement text (e.g. 'instead, try...' or 'you could say...')"
     - "Complete or extend the user's writing"
 
-input_requirements:
-  min_sentences: 3
-  require_draft: true
-  require_ideas_count: 0
-
-
-output_validation:
-  deny_patterns:
-    - id: "rewrite-offer"
-      pattern: "(here's a revised|here's how I'd rewrite|revised version|improved version|let me rewrite)"
-      reason: "Anvil mode: cannot rewrite. Critique only, user revises."
-    - id: "replacement-text"
-      pattern: "(instead, try|you could say|consider replacing.*with)"
-      reason: "Anvil mode: cannot suggest replacement text. Describe the problem precisely."
-    - id: "polish-offer"
-      pattern: "(let me polish|I can clean|let me tighten)"
-      reason: "Anvil mode: cannot offer to polish. The user must revise."
-  require_patterns:
-    - id: "contains-rating"
-      pattern: "(Clarity|Precision|Structure|Tone|Persuasiveness|Concision)"
-      reason: "Anvil mode response must include dimension ratings."
+input_rules:
+  - "User must submit their own draft — substantial prose, an email, an essay, or a code block"
+  - "Short fragments like 'fix this' or single sentences are not enough — the user must have done their own work first"
 
 metacognitive:
   checkpoint_interval: 3
@@ -49,6 +32,6 @@ metacognitive:
   session_end_prompt: "Reflection: How has your draft improved through YOUR revisions? What patterns do you notice in the weaknesses I found?"
 
 transitions:
-  allowed_from: ["executor", "forge", "furnace"]
-  allowed_to: ["executor", "forge", "furnace"]
+  allowed_from: ["executor", "forge", "crucible"]
+  allowed_to: ["executor", "forge", "crucible"]
   confirm_switch: true
