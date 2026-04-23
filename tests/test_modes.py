@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from lib.modes import Mode, load_all_modes, load_mode, validate_mode_id
+from lib.modes import VALID_MODE_IDS, Mode, load_all_modes, load_mode
 
 MODES_DIR = Path(__file__).parent.parent / "modes"
 
@@ -75,12 +75,9 @@ def test_load_system_prompt():
     assert "cognitive forcing partner" in prompt.lower()
 
 
-def test_validate_mode_id():
-    assert validate_mode_id("forge") is True
-    assert validate_mode_id("anvil") is True
-    assert validate_mode_id("crucible") is True
-    assert validate_mode_id("executor") is True
-    assert validate_mode_id("unknown") is False
+def test_valid_mode_ids_set():
+    assert VALID_MODE_IDS == {"forge", "anvil", "crucible", "executor"}
+    assert "unknown" not in VALID_MODE_IDS
 
 
 def test_load_nonexistent_mode():

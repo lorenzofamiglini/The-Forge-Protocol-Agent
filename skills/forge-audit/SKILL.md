@@ -1,7 +1,7 @@
 ---
 name: forge-audit
 description: Run Forge Protocol self-audits — weekly canary, monthly stress test, or quarterly dependency review.
-version: 0.1.0
+version: 0.2.0
 author: Forge Protocol
 license: MIT
 metadata:
@@ -42,10 +42,10 @@ Review your AI usage patterns across all sessions:
 
 ## How It Works
 
-1. Call `forge_get_state` to check audit status and which audits are overdue
-2. For a weekly canary: call `forge_canary_list` to show the user the fixed prompts (or pick one by id), present the challenge, and enforce the time limit by prompting the user to commit before submitting
-3. Submit the user's unassisted response via `forge_canary_submit(prompt_id, response)` — the adversarial auditor (Claude Sonnet) scores it and returns the full trend
-4. Show the user their last score, change vs. previous, and slope across attempts — be honest about what the data says
+1. Call `forge_get_state` to check audit status and which audits are overdue.
+2. **Weekly canary**: call `forge_canary_list` to show the user the fixed prompts (or pick one by id), present the challenge, enforce the time limit by prompting the user to commit before submitting. Submit the response via `forge_canary_submit(prompt_id, response)` — the adversarial auditor (Claude Sonnet) scores it and returns the full trend. Show the user their last score, change vs. previous, and slope across attempts; be honest about what the data says.
+3. **Quarterly dependency audit**: call `forge_dependency_report` — this computes mode-usage ratios across every session, total violations, and a health assessment ("WARNING: 80% in Executor mode…" or "Healthy balance…"). It also records the audit-completion timestamp so the overdue reminder clears.
+4. **Monthly stress test**: there is no dedicated tool — present an unassisted 30–60 minute challenge, then log the outcome conversationally.
 
 ## Healthy Targets
 

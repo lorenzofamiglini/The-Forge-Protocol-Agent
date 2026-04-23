@@ -22,6 +22,7 @@ from plugin import (
     _handle_checkpoint,
     _handle_get_state,
     _handle_set_mode,
+    _handle_dependency_report,
     _handle_log,
 )
 
@@ -98,6 +99,15 @@ class TestCheckpointTool:
         assert "messages_until_next" in result
 
 
+class TestDependencyReportTool:
+    def test_returns_report_shape(self):
+        result = _call(_handle_dependency_report)
+        assert "mode_ratios" in result
+        assert "assessment" in result
+        assert "total_sessions" in result
+        assert set(result["mode_ratios"].keys()) == {"forge", "anvil", "crucible", "executor"}
+
+
 class TestLogTool:
     def test_log_interaction(self):
         result = _call(_handle_log)
@@ -148,12 +158,13 @@ class TestHermesRegistration:
             assert set(forge_tools) == {
                 "forge_validate_input", "forge_validate_output",
                 "forge_checkpoint", "forge_get_state", "forge_set_mode",
-                "forge_canary_list", "forge_canary_submit", "forge_log",
+                "forge_canary_list", "forge_canary_submit",
+                "forge_dependency_report", "forge_log",
             }
         finally:
             reg_mod.registry = original
 
-    def test_registers_3_hooks(self):
+    def test_registers_lifecycle_hooks(self):
         from hermes_cli.plugins import PluginManager, PluginManifest, PluginContext
         from plugin import register
 
@@ -164,4 +175,8 @@ class TestHermesRegistration:
 
         assert "on_session_start" in manager._hooks
         assert "on_session_end" in manager._hooks
-        assert "pre_tool_call" in manager._hooks
+        # pre_tool_call deliberately not registered — the return-shape we
+        # would need is {"action":"block","message":...} which would BLOCK
+        # writes instead of merely warning, so the orchestrator SOUL handles
+        # the thinking-vs-execution classification instead.
+        assert "pre_tool_call" not in manager._hooks

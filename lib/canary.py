@@ -14,13 +14,13 @@ value is a list of attempts sorted oldest-first.
 from __future__ import annotations
 
 import json
-import os
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
 from . import auditor
+from .state import _default_state_dir
 
 
 # ---------------------------------------------------------------------------
@@ -76,11 +76,6 @@ def get_canary_question_by_id(prompt_id: str) -> dict[str, Any] | None:
 # ---------------------------------------------------------------------------
 # Persistence
 # ---------------------------------------------------------------------------
-
-def _default_state_dir() -> Path:
-    env = os.environ.get("FORGE_STATE_DIR")
-    return Path(env).expanduser() if env else Path.home() / ".forge-state"
-
 
 @dataclass
 class CanaryAttempt:

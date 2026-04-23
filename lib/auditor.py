@@ -79,15 +79,6 @@ class CanaryScore:
     auditor_model: str = ""
     error: str | None = None
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "overall": self.overall,
-            "dimensions": self.dimensions,
-            "notes": self.notes,
-            "auditor_model": self.auditor_model,
-            "error": self.error,
-        }
-
 
 # ---------------------------------------------------------------------------
 # Prompts
