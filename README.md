@@ -427,7 +427,7 @@ A: In Forge/Anvil/Crucible modes, yes — intentionally. That friction is the fe
 A: Yes. The `lib/` directory is a standalone Python library with zero dependencies beyond PyYAML. Import `get_input_rules()` and `get_output_rules()` to retrieve the natural-language rules for a mode, then have your own LLM evaluate compliance. The SOUL files in `souls/` can be copy-pasted into any LLM's system prompt.
 
 **Q: What LLMs does this work with?**
-A: Any LLM supported by Hermes Agent — Claude (via Vertex AI or API), GPT-4, Gemini, Llama, Mistral, and 100+ models via OpenRouter.
+A: Any LLM supported by Hermes Agent — Claude (via Vertex AI or API), GPT, Gemini, Llama, Mistral, and 100+ models via OpenRouter.
 
 **Q: Is this just a system prompt?**
 A: The system prompts (`souls/`) are the starting point, but Forge Protocol adds enforcement: input validation (did the student submit their own work?), output validation (did the AI follow mode rules?), metacognitive checkpoints (periodic "are you still thinking?" prompts), inline task classification (warning when delegating thinking tasks), and a self-audit system. All validation is LLM-native — the orchestrator evaluates compliance using natural language rules, not regex.
