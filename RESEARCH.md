@@ -18,7 +18,7 @@ A pre-compiled PDF is provided as a release asset when the repository cuts a rel
 
 ## Core theoretical pillars
 
-The paper threads five bodies of research. Skim this table first, then dive into the paper for the derivations.
+The paper threads several bodies of research. Skim this table, then dive into the paper for the derivations.
 
 | Pillar | Primary sources | What Forge Protocol takes from it |
 |---|---|---|
@@ -26,12 +26,36 @@ The paper threads five bodies of research. Skim this table first, then dive into
 | **Desirable difficulties** | Bjork & Bjork (1994, 2011) | Productive struggle improves long-term retention. Mode-level friction is intentional, not accidental UX. |
 | **Automation complacency** | Parasuraman & Manzey (2010) | Humans stop verifying AI output after roughly three interactions. The orchestrator's metacognitive checkpoints fire on that schedule. |
 | **Bainbridge's ironies** | Bainbridge (1983) | Automating thinking while expecting humans to catch its errors creates a dependency that degrades the skill needed to catch the errors. Canaries measure the degradation. |
-| **Deskilling programme** | Cabitza et al. (2024); Wharton/PNAS RCT (2024) | Four types of deskilling — cognitive, semiotic, social, moral. The Wharton RCT found a 17% decline in independent performance after a week of AI use. |
+| **Deskilling programme** | Cabitza et al. (2017, 2024); Natali et al. (2025); Wharton/PNAS RCT (2024) | Four types of deskilling — cognitive, semiotic, social, moral. The Wharton RCT found a 17% decline in independent performance after a week of AI use. |
+
+## The Cabitza lab contribution (central)
+
+The four modes are not arbitrary. They map directly onto patterns validated in the human-AI collaboration research programme run by Federico Cabitza and colleagues at the University of Milano-Bicocca, with contributions from Lorenzo Famiglini (maintainer of this project) on explainability design.
+
+| Forge mode | Protocol | Key paper | What it's designed to prevent |
+|---|---|---|---|
+| **Forge** | Judicial AI paradigm | Cabitza et al. 2025, *Judicial Protocols in Diagnostic AI* | Oracular consultation — single-verdict outputs collapse the decision space |
+| **Anvil** | Hounds protocol (human-first) | Cabitza et al. 2023, *Rams, hounds and white boxes*, Artificial Intelligence in Medicine | Anchoring to AI output (Rams). Preserved independent judgment empirically across 12 radiologists + 44 ECG readers. |
+| **Anvil** (max-rigor option) | Displacement protocol | Cabitza et al. 2025, *Five Degrees of Separation* | Reaches 87–89% accuracy across radiology, ECG, endoscopy — outperforms AI-first and human-first alone |
+| **Crucible** | Frictional AI + Programmed Inefficiencies | Cabitza et al. 2024, *Frictional AI*; Cabitza et al. 2019 | Premature convergence; automatic reliance on plausible-sounding AI output |
+| **Crucible** guard | Epistemic sclerosis | Natali, Marconi, Dias Duran, Miglioretti & Cabitza 2025 | Rigidification of knowledge processes when AI is blindly trusted |
+| **Executor** | Rams protocol (AI-first) | Cabitza et al. 2023 | Acceptable ONLY for mechanical tasks; causes anchoring when judgment is at stake |
+| All thinking modes | White-box paradox guard | Cabitza et al. 2024, *Never Tell Me the Odds* (xAI 2024 Best Paper) | XAI halo effect — articulate explanations increase uncritical acceptance |
+| All thinking modes | OMA — Open, Multiple, Adjunct | Cabitza et al. 2022 | Outputs stay supportive and plural, never authoritative |
+
+### Famiglini lab contributions (this project's maintainer)
+
+Specific mechanisms drawn from Lorenzo Famiglini's co-authored work at Milano-Bicocca:
+
+- **Pro-hoc explanations** (Famiglini et al. 2024, *Never tell me the odds*, Artificial Intelligence in Medicine, Vol. 150): explanations delivered AFTER the user commits — not before — prevent anchoring. Implemented as the "commit before consult" rule across all thinking modes.
+- **Contrasting evidence via Class Activation Maps** (Famiglini et al., CD-MAKE 2022 *Color shadows*; Alternative CAM strategies, 2024): presenting evidence for BOTH positive and negative predictions forces active adjudication. Operationalised in Forge's judicial protocol and Anvil's contrasting-reads.
+- **Evidence-based XAI design framework** (Famiglini et al., ResearchGate preprint 377964086): explanations are evaluated on understandability and clinical relevance, not just plausibility. The rating dimensions in Anvil (clarity, precision, structure, tone, persuasiveness, concision) apply the same evaluation-before-acceptance principle to writing.
+- **Conformal prediction for clinical decision support** (Famiglini et al. 2025, ECG interpretation): uncertainty quantification forces clinicians to commit before consulting AI. Adapted here as the "state your confidence, then I'll challenge it" mechanic in Forge and Crucible.
 
 Beyond these, the paper addresses:
 
-- **XAI halo effect** — clear, articulate AI explanations are believed more than they should be. Forge Protocol's "white-box paradox guard" and judicial/contrasting-reads protocol are direct responses.
-- **Convergence & homogenisation** — AI-mediated work drifts toward a generic central tendency. The mode-specific forbidden behaviours exist to preserve the user's voice.
+- **XAI halo effect** — Cabitza et al. 2024's finding that articulate AI explanations are accepted MORE uncritically, not less. Every thinking-mode soul contains an explicit guard.
+- **Convergence & homogenisation** — AI-mediated work drifts toward a generic central tendency (Doshi & Hauser 2024; Cabitza's *epistemic sclerosis*). The mode-specific forbidden behaviours and divergence-check metacognitive prompts are direct responses.
 
 ## The measurable claim
 

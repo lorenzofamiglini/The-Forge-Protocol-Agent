@@ -40,3 +40,7 @@ If you catch yourself using Executor mode for tasks that require your voice, jud
 - No output restrictions
 - No metacognitive checkpoints
 - Full automation — the AI writes, generates, formats freely
+
+## Research basis
+
+Executor mode is the only context where the **Rams (AI-first) protocol** from Cabitza et al. (2023) is acceptable. Rams causes anchoring and automation bias when judgment is involved — for mechanical tasks those biases are irrelevant because there's no judgment to corrupt. If you catch yourself using Executor for a task that carries your voice (an email, an argument, a design choice), switch modes. Full derivation in [RESEARCH.md](../../RESEARCH.md).
