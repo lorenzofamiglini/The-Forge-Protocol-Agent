@@ -79,17 +79,32 @@ fi
 # ---------------------------------------------------------------------------
 # 4. Copy skills (always copied — Python's rglob doesn't follow symlinks on 3.13+)
 # ---------------------------------------------------------------------------
-# First pass: prune any previously-installed Forge Protocol skills. We detect
-# them by the `forge-protocol` tag in their SKILL.md frontmatter. This catches
-# renamed or retired skills (e.g. the Furnace → Crucible rename) that would
-# otherwise linger in ~/.hermes/skills/ as orphans.
+# Compute the current skill set from the repo.
+CURRENT_SKILLS=()
+for skill_dir in "$SCRIPT_DIR/skills"/*/; do
+    [ -f "$skill_dir/SKILL.md" ] || continue
+    CURRENT_SKILLS+=("$(basename "$skill_dir")")
+done
+
+# First pass: prune previously-installed Forge Protocol skills. We detect them
+# by the `forge-protocol` tag in their SKILL.md frontmatter. Skills that are
+# still in the current set get refreshed silently below; only *orphaned* skills
+# (e.g. renamed or retired like the Furnace → Crucible rename) are announced.
 if [ -d "$HERMES_HOME/skills" ]; then
     for existing_skill in "$HERMES_HOME/skills"/*/; do
         existing_skill_file="$existing_skill/SKILL.md"
+        existing_skill_name="$(basename "$existing_skill")"
         [ -f "$existing_skill_file" ] || continue
         if grep -q "forge-protocol" "$existing_skill_file" 2>/dev/null; then
             rm -rf "$existing_skill"
-            echo "Retired skill pruned: $(basename "$existing_skill")"
+            # Only log when this skill is truly orphaned (no longer in the repo).
+            is_orphan=true
+            for curr in "${CURRENT_SKILLS[@]}"; do
+                [ "$curr" = "$existing_skill_name" ] && { is_orphan=false; break; }
+            done
+            if [ "$is_orphan" = true ]; then
+                echo "Retired skill pruned: $existing_skill_name"
+            fi
         fi
     done
 fi

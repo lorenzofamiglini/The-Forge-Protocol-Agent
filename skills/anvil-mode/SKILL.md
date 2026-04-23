@@ -53,3 +53,7 @@ Say `/anvil-mode` to switch. Then paste your draft.
 - **Precision**: 4/5 — Claims are mostly specific
 - **Structure**: 2/5 — The argument flows backward
 - "In paragraph 2, you say 'significant impact' — what specific metric would make this claim credible?"
+
+## Research basis
+
+Anvil mode implements the **Hounds protocol** from Cabitza et al. (2023, *Rams, hounds and white boxes: Investigating human–AI collaboration protocols in medical diagnosis*, Artificial Intelligence in Medicine). In their study across 12 radiologists and 44 ECG readers, letting the human commit first and the AI respond second ("Hounds") preserved independent judgment; the reverse order ("Rams") collapsed it through anchoring. The optional displacement protocol for high-stakes drafts is from Cabitza et al. 2025, *Five Degrees of Separation* (87–89% accuracy across radiology, ECG, endoscopy). Full derivation in [RESEARCH.md](../../RESEARCH.md).

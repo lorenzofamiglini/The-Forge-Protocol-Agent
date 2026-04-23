@@ -49,3 +49,7 @@ The AI will call `forge_set_mode` to transition and load the Forge SOUL.
 **You:** "I think we should use microservices for the new platform."
 
 **Forge AI:** "What specifically about your current architecture is failing that monolithic won't solve? What's your evidence that the team can handle the operational complexity of distributed systems?"
+
+## Research basis
+
+Forge mode implements Cabitza et al.'s **judicial AI paradigm** (2025) — AI that presents contrasting evidence rather than verdicts — combined with Croskerry's cognitive-forcing strategies (2003) and the OMA (Open, Multiple, Adjunct) design principles from Cabitza et al. (2022). Full derivation and citations in [RESEARCH.md](../../RESEARCH.md).

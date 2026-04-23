@@ -35,16 +35,20 @@ Instead of giving you answers, it gives you **better questions**. Instead of wri
 
 Every AI tool today optimizes for one thing: **get the human to the answer as fast as possible**. That's great for productivity. It's terrible for learning.
 
-Research calls this **deskilling** — the gradual erosion of human capabilities through automation:
+Research calls this **deskilling** — the gradual erosion of human capabilities through automation. Forge Protocol's design is lifted directly from the empirical programme run by Federico Cabitza's lab at Milano-Bicocca, which has spent a decade showing *how* AI deskills users and *which interaction patterns* prevent it:
 
 | Study | Finding |
 |-------|---------|
-| Wharton/PNAS RCT (2024) | 17% performance decline after AI assistance removed |
-| Cabitza et al. (2024) | Identified 4 types: cognitive, semiotic, social, moral deskilling |
-| Bjork & Bjork (1994) | "Desirable difficulties" — productive struggle improves long-term retention |
-| Parasuraman & Manzey (2010) | Automation complacency: humans stop verifying AI output after ~3 interactions |
+| Dell'Acqua et al., Wharton/PNAS RCT (2024) | 17% performance decline after AI assistance removed |
+| Cabitza et al. (2023) — *Rams, hounds and white boxes*, Artificial Intelligence in Medicine | Human-first "Hounds" ordering preserved independent judgment; AI-first "Rams" collapsed it through anchoring (12 radiologists + 44 ECG readers) |
+| Cabitza et al. (2024) — xAI 2024 Best Paper | **White-box paradox** — articulate AI explanations *increase* uncritical acceptance rather than decrease it |
+| Cabitza et al. (2025) — *Five Degrees of Separation* | Displacement protocol (human and AI work independently then combine) reaches 87–89% accuracy across radiology, ECG, endoscopy |
+| Natali, Marconi, Dias Duran, Miglioretti & Cabitza (2025) | Four deskilling types: cognitive, semiotic, social, moral — plus **epistemic sclerosis** at team level |
+| Famiglini et al. (2024) — *Never tell me the odds*, AI in Medicine Vol 150 | **Pro-hoc explanations** (commitment before explanation) prevent anchoring that post-hoc explanations cause |
+| Doshi & Hauser (2024) | AI-assisted creative outputs are **5% more similar to each other** than human-only outputs — convergence as a measurable deskilling signal |
+| Bjork & Bjork (1994); Parasuraman & Manzey (2010) | "Desirable difficulties" and automation-complacency thresholds — cognitive-science foundations |
 
-Forge Protocol is built on a simple idea from cognitive science: **the brain that struggles is the brain that learns**. The full theoretical derivation, including the generation effect, desirable difficulties, automation complacency, and the XAI halo effect, is in [RESEARCH.md](RESEARCH.md) and the paper under [`docs/forge-protocol-paper.tex`](docs/forge-protocol-paper.tex).
+> **Forge Protocol doesn't cite these papers — it implements them.** The four modes map one-to-one onto protocols empirically validated in the Cabitza lab: Forge = judicial AI paradigm, Anvil = Hounds, Crucible = frictional AI + programmed inefficiencies, Executor = Rams (the only context where AI-first is acceptable). The project's maintainer, Lorenzo Famiglini, is a co-author on the Cabitza lab's XAI-design and conformal-prediction work that these patterns draw from. See [RESEARCH.md](RESEARCH.md) for the full mapping.
 
 ---
 
@@ -64,6 +68,8 @@ Forces you to reason.
 
 `/forge-mode`
 
+*Judicial AI paradigm<br>(Cabitza et al. 2025)*
+
 </td>
 <td width="25%" align="center">
 
@@ -76,6 +82,8 @@ Finds weaknesses.
 Never rewrites.
 
 `/anvil-mode`
+
+*Hounds protocol<br>(Cabitza et al. 2023)*
 
 </td>
 <td width="25%" align="center">
@@ -90,6 +98,8 @@ Never fills gaps.
 
 `/crucible-mode`
 
+*Frictional AI<br>(Cabitza et al. 2024)*
+
 </td>
 <td width="25%" align="center">
 
@@ -103,19 +113,21 @@ For mechanical tasks only.
 
 `/executor-mode`
 
+*Rams protocol<br>(only here)*
+
 </td>
 </tr>
 </table>
 
 ### How They Work
 
-**Forge mode** — You say "Help me plan my thesis." The AI responds: *"What's your central claim? Not the topic — the argument. What would someone who disagrees say?"* It never writes for you.
+**Forge mode** (*Judicial AI*) — You say "Help me plan my thesis." The AI presents the case FOR and AGAINST your angle in parallel, then asks *"What's your central claim? What would someone who disagrees say?"* It never converges to a single recommendation (OMA principle: Open, Multiple, Adjunct).
 
-**Anvil mode** — You paste your draft email. The AI rates it on 6 dimensions (clarity, precision, structure, tone, persuasiveness, concision), quotes the 3 weakest passages, and asks *"Where do you disagree with my assessment?"* It never offers rewrites.
+**Anvil mode** (*Hounds protocol*) — You paste your draft. **The order matters**: you commit first (by submitting your full draft), the AI responds second. This is what Cabitza's 2023 study found preserved independent judgment. The AI rates on 6 dimensions, quotes the 3 weakest passages, and asks *"Where do you disagree with my assessment?"* It never rewrites.
 
-**Crucible mode** — You bring 3 ideas. The AI steelmans each one (strongest possible version), then attacks it (finds the fatal flaw). It maps what you haven't considered. It never suggests new ideas.
+**Crucible mode** (*Frictional AI*) — You bring **3+ ideas** (the mode refuses fewer). The AI steelmans each, attacks, and maps what you haven't considered. An epistemic-sclerosis guard kicks in if your ideas read as generic — the mode will ask for one wild or contrarian idea to stop premature convergence before pressure-testing.
 
-**Executor mode** — Formatting, translation, boilerplate, scheduling. Tasks that don't require your judgment. No friction, no questions.
+**Executor mode** (*Rams protocol*) — Formatting, translation, boilerplate, scheduling. No friction, no questions. This is the only mode where the AI-first pattern is acceptable — Cabitza's research shows Rams causes anchoring when *judgment* is at stake, so the orchestrator warns you if it detects a thinking task here.
 
 ### Automatic Task Detection
 
@@ -281,15 +293,17 @@ Validated Response → You
 
 ```
 forge-protocol/
-├── plugin/          # Hermes Agent plugin (6 tools + 3 hooks)
+├── plugin/          # Hermes Agent plugin (9 tools + 2 hooks)
 │   ├── plugin.yaml
 │   └── __init__.py
 ├── lib/             # Pure Python core (no Hermes dependency)
-│   ├── modes.py     # YAML mode loader
-│   ├── state.py     # Session state management
-│   ├── validator.py # Validation rule retrieval for LLM evaluation
-│   ├── checkpoints.py # Metacognitive checkpoint scheduler
-│   └── audit.py     # Self-audit system
+│   ├── modes.py        # YAML mode loader
+│   ├── state.py        # Session state management
+│   ├── validator.py    # Validation rule retrieval for LLM evaluation
+│   ├── auditor.py      # Adversarial Sonnet auditor (optional, opt-in)
+│   ├── canary.py       # Fixed canary prompts + skill tracking
+│   ├── checkpoints.py  # Metacognitive checkpoint scheduler
+│   └── audit.py        # Weekly/monthly/quarterly audit reminders
 ├── modes/           # Portable YAML mode definitions
 │   ├── forge.yaml
 │   ├── anvil.yaml
@@ -302,8 +316,10 @@ forge-protocol/
 │   ├── crucible.md
 │   └── executor.md
 ├── skills/          # Hermes slash commands (/forge-mode, etc.)
-├── tests/           # Unit tests
-├── install.sh       # One-line installer for Hermes
+├── docs/            # Research paper (LaTeX source)
+├── tests/           # Unit tests (85, pytest)
+├── RESEARCH.md      # Theoretical grounding + citations
+├── install.sh       # Installer for Hermes (copy by default, --dev for symlink)
 └── forge.sh         # Launch script
 ```
 
@@ -350,15 +366,32 @@ metacognitive:
 
 ## The Research
 
-Forge Protocol is grounded in peer-reviewed cognitive science:
+Forge Protocol is grounded in peer-reviewed cognitive science and the Cabitza lab's decade-long empirical programme on human-AI collaboration. [RESEARCH.md](RESEARCH.md) has the full mapping; the summary:
 
-- **Generation Effect** (Slamecka & Graf, 1978) — Information you generate yourself is retained better than information you passively receive
-- **Desirable Difficulties** (Bjork & Bjork, 1994) — Productive struggle during learning leads to better long-term retention
-- **Automation Complacency** (Parasuraman & Manzey, 2010) — Humans stop verifying automated output after initial trust is established
-- **Deskilling Taxonomy** (Cabitza et al., 2024) — Four types: cognitive (can't think), semiotic (can't interpret), social (can't collaborate), moral (can't judge)
-- **AI-Induced Skill Decline** (Dell'Acqua et al., 2024) — Wharton RCT showing 17% decline in unassisted performance after AI use
-- **Judicial AI Paradigm** — Present both sides of every issue, never converge to a single recommendation
-- **Frictional AI** — Programmed inefficiencies that force engagement over passive consumption
+**Foundational cognitive science:**
+- **Generation effect** (Slamecka & Graf, 1978) — self-generated content is retained better than passively consumed content
+- **Desirable difficulties** (Bjork & Bjork, 1994) — productive struggle improves long-term retention
+- **Cognitive forcing strategies** (Croskerry, 2003) — explicit commitment before consultation activates analytical reasoning
+- **Automation complacency** (Parasuraman & Manzey, 2010) — humans stop verifying automated output after initial trust
+
+**Cabitza lab — empirical human-AI collaboration protocols (Milano-Bicocca):**
+- **Hounds / Rams / White Boxes** (Cabitza et al., 2023, *Artificial Intelligence in Medicine*) — human-first ordering empirically preserves judgment; AI-first collapses it
+- **White-box paradox** (Cabitza et al., 2024 — xAI 2024 Best Paper) — articulate explanations increase automation bias rather than decrease it
+- **Frictional AI + programmed inefficiencies** (Cabitza et al., 2019, 2024) — deliberate cognitive challenges prevent automatic reliance
+- **Judicial AI paradigm** (Cabitza et al., 2025) — contrasting evidence replaces oracular verdicts
+- **OMA — Open, Multiple, Adjunct** (Cabitza et al., 2022) — design principles for decision-support outputs
+- **Displacement protocol** (Cabitza et al., 2025 — *Five Degrees of Separation*) — 87–89% accuracy when human and AI work independently then combine
+- **Deskilling taxonomy** (Natali, Marconi, Dias Duran, Miglioretti & Cabitza, 2025) — four types: cognitive, semiotic, social, moral + epistemic sclerosis at team level
+
+**Famiglini lab contributions (maintainer's own co-authored work):**
+- **Pro-hoc explanations** (Famiglini et al., 2024, *Never tell me the odds*, AI in Medicine Vol 150) — commitments before explanations prevent anchoring
+- **Contrasting evidence via CAMs** (Famiglini et al., CD-MAKE 2022; 2024 alternative strategies) — visual dual-evidence forces active adjudication
+- **Evidence-based XAI design** — explanations evaluated on understandability + clinical relevance, not plausibility
+- **Conformal prediction for ECG** (Famiglini et al., 2025) — uncertainty quantification as commitment-forcing mechanism
+
+**Convergence and the Wharton RCT:**
+- **AI-induced convergence** (Doshi & Hauser, 2024) — 5% homogenisation across AI-assisted creative outputs
+- **AI-induced skill decline** (Dell'Acqua et al., 2024) — 17% unassisted-performance decline after one week of AI use
 
 ---
 
@@ -411,7 +444,7 @@ A: The system prompts (`souls/`) are the starting point, but Forge Protocol adds
 
 ## Author
 
-Created by **Lorenzo Famiglini** (lorenzofamiglini@gmail.com)
+Created by **Lorenzo Famiglini** (lorenzofamiglini@gmail.com) — Università di Milano-Bicocca. Co-author on the Cabitza lab's work on explainable AI in medical decision support, contrasting-evidence class-activation-maps (CD-MAKE 2022; 2024), *Never tell me the odds* (AI in Medicine 2024), and conformal prediction for ECG interpretation (2025). Forge Protocol is a direct implementation of those collaboration protocols, translated from medical decision support to LLM-augmented knowledge work.
 
 Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com/).
 

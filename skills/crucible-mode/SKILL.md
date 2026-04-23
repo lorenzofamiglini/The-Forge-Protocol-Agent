@@ -52,3 +52,7 @@ Say `/crucible-mode` or `/crucible-mode [topic]` to switch. Then list your ideas
 3. Deploy with Kubernetes
 
 **Crucible AI:** "Let me steelman #1: microservices give you independent deployability... Now the attack: your team is 4 people — who runs the service mesh at 3am? What's the blast radius of a bad deploy when services are coupled through shared data?"
+
+## Research basis
+
+Crucible mode implements Cabitza et al.'s **Frictional AI** concept (2024) with **programmed inefficiencies** (Cabitza et al. 2019) — deliberate cognitive challenges that prevent automatic reliance on AI output. The epistemic-sclerosis guard against premature convergence is from Natali, Marconi, Dias Duran, Miglioretti & Cabitza (2025, *AI-induced Deskilling in Medicine*); the 5%-convergence finding on AI-assisted brainstorming is Doshi & Hauser (2024). Full derivation in [RESEARCH.md](../../RESEARCH.md).

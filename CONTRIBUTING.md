@@ -5,7 +5,7 @@ Thanks for your interest in making AI work *with* human thinking instead of repl
 ## Ways to Contribute
 
 ### New Modes
-Drop a YAML file in `modes/` and a system prompt in `souls/`. See `modes/forge.yaml` for the format. Ideas:
+Drop a YAML file in `modes/` and a system prompt in `souls/`. The full field reference is in [`modes/schema.yaml`](modes/schema.yaml) (annotated, not validated at runtime — the loader at `lib/modes.py` is forgiving). Use [`modes/forge.yaml`](modes/forge.yaml) as a working example. Mode ideas:
 - **Mentor Mode** — for tutoring specific subjects
 - **Debate Mode** — structured argument practice
 - **Code Review Mode** — critique code without rewriting it

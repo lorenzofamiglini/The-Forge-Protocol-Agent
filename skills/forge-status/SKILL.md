@@ -24,6 +24,7 @@ Say `/forge-status` to see:
 - **Mode history** (which modes you've used and for how long)
 - **Audit reminders** (overdue weekly canary, monthly stress test, quarterly dependency audit)
 - **Next checkpoint** (messages until next metacognitive prompt)
+- **Last canary score + trend** — if the user has run a weekly canary, pull the latest trend (last score, change vs. previous, slope across attempts) so they can see whether their unassisted skills are drifting. Call `forge_canary_list` to see which prompts they've been taking; for the most recent, show the scored dimensions.
 
 ## How to Check
 
