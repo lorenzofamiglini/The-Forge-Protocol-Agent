@@ -444,7 +444,7 @@ A: The system prompts (`souls/`) are the starting point, but Forge Protocol adds
 
 ## Author
 
-Created by **Lorenzo Famiglini** (lorenzofamiglini@gmail.com) — Università di Milano-Bicocca. Co-author on the Cabitza lab's work on explainable AI in medical decision support, contrasting-evidence class-activation-maps (CD-MAKE 2022; 2024), *Never tell me the odds* (AI in Medicine 2024), and conformal prediction for ECG interpretation (2025). Forge Protocol is a direct implementation of those collaboration protocols, translated from medical decision support to LLM-augmented knowledge work.
+Created by **Lorenzo Famiglini, PhD** (lorenzofamiglini@gmail.com). Co-author on the Cabitza lab's work on explainable AI in medical decision support, contrasting-evidence class-activation-maps (CD-MAKE 2022; 2024), *Never tell me the odds* (AI in Medicine 2024), and conformal prediction for ECG interpretation (2025). Forge Protocol is a direct implementation of those collaboration protocols, translated from medical decision support to LLM-augmented knowledge work.
 
 Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by [Nous Research](https://nousresearch.com/).
 
