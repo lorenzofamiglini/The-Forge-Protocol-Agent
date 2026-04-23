@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "forge-protocol"
-version = "0.1.0"
+version = "0.2.0"
 description = "The AI that refuses to think for you. Anti-deskilling framework that protects human cognitive skills."
 readme = "README.md"
 license = "MIT"

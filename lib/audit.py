@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import random
 import time
 from dataclasses import dataclass, field
 
-from .canary import CANARY_QUESTIONS  # re-exported for backwards compatibility
 from .modes import VALID_MODE_IDS
 from .state import Session, StateManager
 
@@ -160,15 +158,3 @@ def compute_dependency_report(state_manager: StateManager) -> DependencyReport:
     )
 
 
-def get_canary_question(category: str | None = None) -> dict:
-    """Pick a random canary question, optionally filtered by category.
-
-    Kept for backwards compatibility. Prefer ``lib.canary.submit_canary`` for
-    scored, tracked attempts with trend computation.
-    """
-    pool = CANARY_QUESTIONS
-    if category:
-        pool = [q for q in pool if q["category"] == category]
-    if not pool:
-        pool = CANARY_QUESTIONS
-    return random.choice(pool)

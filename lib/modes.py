@@ -121,8 +121,3 @@ def load_all_modes(modes_dir: str | Path) -> dict[str, Mode]:
 
 
 VALID_MODE_IDS = {"forge", "anvil", "crucible", "executor"}
-
-
-def validate_mode_id(mode_id: str) -> bool:
-    """Check if a mode ID is one of the built-in modes."""
-    return mode_id in VALID_MODE_IDS

@@ -1,6 +1,6 @@
 """Forge Protocol plugin for Hermes Agent.
 
-Registers 8 tools and lifecycle hooks that enforce the Forge Protocol's
+Registers 9 tools and 2 lifecycle hooks that enforce the Forge Protocol's
 4 interaction modes (Forge, Anvil, Crucible, Executor) to protect human
 cognitive sovereignty when working with AI.
 """
@@ -52,7 +52,7 @@ else:
 # Import our pure-Python core
 from lib.checkpoints import check_checkpoint, get_session_end_prompt, messages_until_checkpoint
 from lib.modes import load_all_modes, Mode
-from lib.state import StateManager, Session
+from lib.state import StateManager, Session, Violation
 from lib.validator import get_input_rules, get_output_rules
 from lib.audit import check_audit_reminders, compute_dependency_report
 from lib import auditor as adversarial_auditor
@@ -244,6 +244,25 @@ CANARY_SUBMIT_SCHEMA = {
             },
         },
         "required": ["prompt_id", "response"],
+    },
+}
+
+DEPENDENCY_REPORT_SCHEMA = {
+    "name": "forge_dependency_report",
+    "description": (
+        "Compute the quarterly dependency audit: mode-usage ratios across all "
+        "sessions, total violations, and an assessment of cognitive health. "
+        "Updates the last_dependency_audit timestamp so the reminder clears."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "session_id": {
+                "type": "string",
+                "description": "Session ID used to record the audit completion. Defaults to current session.",
+            },
+        },
+        "required": [],
     },
 }
 
@@ -505,6 +524,32 @@ def _handle_canary_submit(args: dict, **kw) -> str:
     })
 
 
+def _handle_dependency_report(args: dict, **kw) -> str:
+    session_id = args.get("session_id") or _current_session_id
+    sm = _get_state_manager()
+    report = compute_dependency_report(sm)
+
+    # Mark the quarterly audit as completed so its reminder clears.
+    if session_id:
+        try:
+            sm.update_audit(session_id, "dependency")
+        except ValueError:
+            pass  # session not found — non-fatal
+
+    return json.dumps({
+        "total_sessions": report.total_sessions,
+        "total_messages": report.total_messages,
+        "mode_ratios": {
+            "forge": report.mode_ratios.forge,
+            "anvil": report.mode_ratios.anvil,
+            "crucible": report.mode_ratios.crucible,
+            "executor": report.mode_ratios.executor,
+        },
+        "total_violations": report.total_violations,
+        "assessment": report.assessment,
+    })
+
+
 def _handle_log(args: dict, **kw) -> str:
     session_id = args.get("session_id")
     violation_type = args.get("violation_type")
@@ -520,7 +565,6 @@ def _handle_log(args: dict, **kw) -> str:
 
     violation_logged = False
     if violation_type and rule_id:
-        from lib.state import Violation
         session.violations.append(
             Violation(
                 timestamp=time.time(),
@@ -576,33 +620,6 @@ def _on_session_end(**kwargs: Any) -> None:
         logger.info("Forge session-end prompt: %s", end_prompt[:80])
 
 
-def _pre_tool_call(**kwargs: Any) -> dict | None:
-    """Before each tool call, check if we should intervene.
-
-    In Forge/Anvil/Crucible modes, warn if the agent is about to write
-    code or files (which might bypass the thinking-first requirement).
-    """
-    if not _current_session_id:
-        return None
-
-    session = _get_session(_current_session_id)
-    tool_name = kwargs.get("tool_name", "")
-
-    # In thinking modes, flag direct code/file writes
-    if session.current_mode in ("forge", "anvil", "crucible"):
-        write_tools = {"write_file", "patch", "execute_code"}
-        if tool_name in write_tools:
-            return {
-                "context": (
-                    f"[Forge Protocol] Warning: You are in {session.current_mode} mode. "
-                    f"Calling {tool_name} may bypass the thinking-first requirement. "
-                    "Consider asking the user to write the code themselves."
-                )
-            }
-
-    return None
-
-
 # ---------------------------------------------------------------------------
 # Plugin registration entry point
 # ---------------------------------------------------------------------------
@@ -628,6 +645,8 @@ def register(ctx) -> None:
          "List canary prompts for skill tracking"),
         ("forge_canary_submit", CANARY_SUBMIT_SCHEMA, _handle_canary_submit,
          "Submit and score an unassisted canary response"),
+        ("forge_dependency_report", DEPENDENCY_REPORT_SCHEMA, _handle_dependency_report,
+         "Compute quarterly mode-usage dependency audit"),
         ("forge_log", LOG_SCHEMA, _handle_log,
          "Log interaction for audit trail"),
     ]
@@ -640,6 +659,7 @@ def register(ctx) -> None:
         "forge_set_mode": "🔄",
         "forge_canary_list": "🐤",
         "forge_canary_submit": "📈",
+        "forge_dependency_report": "📉",
         "forge_log": "📝",
     }
 
@@ -656,6 +676,5 @@ def register(ctx) -> None:
     # Register lifecycle hooks
     ctx.register_hook("on_session_start", _on_session_start)
     ctx.register_hook("on_session_end", _on_session_end)
-    ctx.register_hook("pre_tool_call", _pre_tool_call)
 
-    logger.info("Forge Protocol plugin registered: 8 tools, 3 hooks")
+    logger.info("Forge Protocol plugin registered: 9 tools, 2 hooks")
