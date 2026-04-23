@@ -135,8 +135,18 @@ ORCHESTRATOR_SOUL="$SCRIPT_DIR/souls/forge-orchestrator.md"
 
 if [ -f "$SOUL_FILE" ]; then
     if grep -q "Forge Protocol" "$SOUL_FILE" 2>/dev/null; then
-        echo "SOUL.md already contains Forge Protocol — updating..."
-        cp "$ORCHESTRATOR_SOUL" "$SOUL_FILE"
+        # Re-install path: the user may have edited SOUL.md after the first
+        # install. Skip the overwrite if the file already matches upstream;
+        # otherwise back up before replacing, so local customizations are
+        # never silently destroyed.
+        if cmp -s "$ORCHESTRATOR_SOUL" "$SOUL_FILE"; then
+            echo "SOUL.md already up to date."
+        else
+            BACKUP="$SOUL_FILE.backup.$(date +%Y%m%d%H%M%S)"
+            cp "$SOUL_FILE" "$BACKUP"
+            cp "$ORCHESTRATOR_SOUL" "$SOUL_FILE"
+            echo "SOUL.md updated (previous version saved to $BACKUP)"
+        fi
     else
         BACKUP="$SOUL_FILE.backup.$(date +%Y%m%d%H%M%S)"
         cp "$SOUL_FILE" "$BACKUP"
