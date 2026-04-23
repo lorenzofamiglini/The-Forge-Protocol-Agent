@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [forge-protocol, status, dashboard, audit]
-    related_skills: [forge-mode, anvil-mode, furnace-mode, forge-audit]
+    related_skills: [forge-mode, anvil-mode, crucible-mode, forge-audit]
 ---
 
 # Forge Status
@@ -18,7 +18,7 @@ Show a dashboard of your current Forge Protocol state.
 
 Say `/forge-status` to see:
 
-- **Current mode** (Forge, Anvil, Furnace, or Executor)
+- **Current mode** (Forge, Anvil, Crucible, or Executor)
 - **Message count** in this session
 - **Violation count** (times the AI broke mode rules)
 - **Mode history** (which modes you've used and for how long)

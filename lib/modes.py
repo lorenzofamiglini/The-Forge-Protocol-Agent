@@ -9,33 +9,6 @@ import yaml
 
 
 @dataclass
-class DenyPattern:
-    id: str
-    pattern: str
-    reason: str
-
-
-@dataclass
-class RequirePattern:
-    id: str
-    pattern: str
-    reason: str
-
-
-@dataclass
-class OutputValidation:
-    deny_patterns: list[DenyPattern] = field(default_factory=list)
-    require_patterns: list[RequirePattern] = field(default_factory=list)
-
-
-@dataclass
-class InputRequirements:
-    min_sentences: int = 0
-    require_draft: bool = False
-    require_ideas_count: int = 0
-
-
-@dataclass
 class Metacognitive:
     checkpoint_interval: int = 0
     prompts: list[str] = field(default_factory=list)
@@ -62,8 +35,7 @@ class Mode:
     description: str
     system_prompt_file: str
     behaviors: Behaviors
-    input_requirements: InputRequirements
-    output_validation: OutputValidation
+    input_rules: list[str]
     metacognitive: Metacognitive
     transitions: Transitions = field(default_factory=Transitions)
 
@@ -78,10 +50,6 @@ class Mode:
         if not path.exists():
             raise FileNotFoundError(f"System prompt file not found: {path}")
         return path.read_text(encoding="utf-8")
-
-
-def _parse_patterns(raw: list[dict], cls):
-    return [cls(id=p["id"], pattern=p["pattern"], reason=p["reason"]) for p in raw]
 
 
 def load_mode(path: str | Path) -> Mode:
@@ -106,18 +74,7 @@ def load_mode(path: str | Path) -> Mode:
         forbidden=behaviors_raw.get("forbidden", []),
     )
 
-    input_raw = data.get("input_requirements", {})
-    input_req = InputRequirements(
-        min_sentences=input_raw.get("min_sentences", 0),
-        require_draft=input_raw.get("require_draft", False),
-        require_ideas_count=input_raw.get("require_ideas_count", 0),
-    )
-
-    output_raw = data.get("output_validation", {})
-    output_val = OutputValidation(
-        deny_patterns=_parse_patterns(output_raw.get("deny_patterns", []), DenyPattern),
-        require_patterns=_parse_patterns(output_raw.get("require_patterns", []), RequirePattern),
-    )
+    input_rules = data.get("input_rules", [])
 
     meta_raw = data.get("metacognitive", {})
     metacognitive = Metacognitive(
@@ -139,8 +96,7 @@ def load_mode(path: str | Path) -> Mode:
         description=data["description"],
         system_prompt_file=data["system_prompt_file"],
         behaviors=behaviors,
-        input_requirements=input_req,
-        output_validation=output_val,
+        input_rules=input_rules,
         metacognitive=metacognitive,
         transitions=transitions,
     )
@@ -164,7 +120,7 @@ def load_all_modes(modes_dir: str | Path) -> dict[str, Mode]:
     return modes
 
 
-VALID_MODE_IDS = {"forge", "anvil", "furnace", "executor"}
+VALID_MODE_IDS = {"forge", "anvil", "crucible", "executor"}
 
 
 def validate_mode_id(mode_id: str) -> bool:

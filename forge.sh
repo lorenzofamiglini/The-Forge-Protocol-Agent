@@ -17,7 +17,7 @@ fi
 
 echo "Forge Protocol — The AI that refuses to think for you."
 echo ""
-echo "  Commands: /forge-mode  /anvil-mode  /furnace-mode  /executor-mode"
+echo "  Commands: /forge-mode  /anvil-mode  /crucible-mode  /executor-mode"
 echo "            /forge-status  /forge-audit"
 echo ""
 

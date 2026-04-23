@@ -39,6 +39,11 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
 ]
+# Adversarial auditor via direct Anthropic API (FORGE_AUDITOR_ENABLED=1).
+auditor = [
+    "anthropic>=0.39.0",
+]
+# Same auditor via Google Cloud Vertex AI.
 vertex = [
     "anthropic[vertex]>=0.39.0",
 ]

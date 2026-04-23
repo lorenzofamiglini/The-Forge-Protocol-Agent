@@ -1,14 +1,35 @@
 #!/usr/bin/env bash
-# Forge Protocol installer for Hermes Agent
-# Symlinks plugin, skills, and SOUL into ~/.hermes/
+# Forge Protocol installer for Hermes Agent.
+#
+# By default, copies plugin, lib, modes, and souls into a self-contained
+# tree under $HERMES_HOME/plugins/forge-protocol/. Re-run after editing
+# files in the repo to refresh the install.
+#
+# Use --dev to symlink the repo instead — useful when actively developing
+# the plugin. With --dev, changes in the repo are visible to Hermes without
+# re-running this script, but moving or deleting the repo breaks the install.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+MODE="copy"
+
+for arg in "$@"; do
+    case "$arg" in
+        --dev)  MODE="symlink" ;;
+        -h|--help)
+            echo "Usage: $0 [--dev]"
+            echo "  (default)  copy the repo into \$HERMES_HOME/plugins/forge-protocol"
+            echo "  --dev      symlink the repo for active development"
+            exit 0
+            ;;
+    esac
+done
 
 echo "=== Forge Protocol Installer ==="
 echo "Repo:        $SCRIPT_DIR"
 echo "Hermes home: $HERMES_HOME"
+echo "Install:     $MODE (use --dev to symlink)"
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -27,27 +48,39 @@ fi
 mkdir -p "$HERMES_HOME/plugins"
 mkdir -p "$HERMES_HOME/skills"
 
+PLUGIN_ROOT="$HERMES_HOME/plugins/forge-protocol"
+
 # ---------------------------------------------------------------------------
-# 3. Symlink plugin
+# 3. Install plugin (copy or symlink)
 # ---------------------------------------------------------------------------
-PLUGIN_LINK="$HERMES_HOME/plugins/forge-protocol"
-if [ -L "$PLUGIN_LINK" ]; then
-    echo "Removing old plugin symlink..."
-    rm "$PLUGIN_LINK"
-elif [ -d "$PLUGIN_LINK" ]; then
-    echo "Removing old plugin directory..."
-    rm -rf "$PLUGIN_LINK"
+# Clean any previous install — may have been copy or symlink.
+if [ -L "$PLUGIN_ROOT" ]; then
+    rm "$PLUGIN_ROOT"
+elif [ -d "$PLUGIN_ROOT" ]; then
+    rm -rf "$PLUGIN_ROOT"
 fi
 
-ln -s "$SCRIPT_DIR/plugin" "$PLUGIN_LINK"
-echo "Plugin linked:  $PLUGIN_LINK -> $SCRIPT_DIR/plugin"
+if [ "$MODE" = "symlink" ]; then
+    # Dev mode: a single symlink to the repo root. The plugin resolves
+    # sibling dirs (lib, modes) relative to its own location, so pointing
+    # the whole tree makes Python see the live repo.
+    ln -s "$SCRIPT_DIR" "$PLUGIN_ROOT"
+    echo "Plugin linked (dev):  $PLUGIN_ROOT -> $SCRIPT_DIR"
+else
+    # Prod mode: self-contained copy. Re-run install.sh after edits.
+    mkdir -p "$PLUGIN_ROOT"
+    cp -R "$SCRIPT_DIR/plugin/"*  "$PLUGIN_ROOT/"
+    cp -R "$SCRIPT_DIR/lib"       "$PLUGIN_ROOT/lib"
+    cp -R "$SCRIPT_DIR/modes"     "$PLUGIN_ROOT/modes"
+    cp -R "$SCRIPT_DIR/souls"     "$PLUGIN_ROOT/souls"
+    echo "Plugin copied:        $PLUGIN_ROOT"
+fi
 
 # ---------------------------------------------------------------------------
-# 4. Copy skills (symlinks break Python's rglob on 3.13+)
+# 4. Copy skills (always copied — Python's rglob doesn't follow symlinks on 3.13+)
 # ---------------------------------------------------------------------------
 for skill_dir in "$SCRIPT_DIR/skills"/*/; do
     skill_name="$(basename "$skill_dir")"
-    # Skip empty dirs
     [ -f "$skill_dir/SKILL.md" ] || continue
 
     skill_dest="$HERMES_HOME/skills/$skill_name"
@@ -59,7 +92,7 @@ for skill_dir in "$SCRIPT_DIR/skills"/*/; do
     fi
 
     cp -r "$skill_dir" "$skill_dest"
-    echo "Skill copied:   $skill_dest"
+    echo "Skill copied:         $skill_dest"
 done
 
 # ---------------------------------------------------------------------------
@@ -69,12 +102,10 @@ SOUL_FILE="$HERMES_HOME/SOUL.md"
 ORCHESTRATOR_SOUL="$SCRIPT_DIR/souls/forge-orchestrator.md"
 
 if [ -f "$SOUL_FILE" ]; then
-    # Check if it's already the forge orchestrator
     if grep -q "Forge Protocol" "$SOUL_FILE" 2>/dev/null; then
         echo "SOUL.md already contains Forge Protocol — updating..."
         cp "$ORCHESTRATOR_SOUL" "$SOUL_FILE"
     else
-        # Backup existing SOUL.md and append forge section
         BACKUP="$SOUL_FILE.backup.$(date +%Y%m%d%H%M%S)"
         cp "$SOUL_FILE" "$BACKUP"
         echo "Backed up existing SOUL.md to: $BACKUP"
@@ -111,7 +142,7 @@ if [ -f "$SOUL_FILE" ]; then
     fi
 else
     cp "$ORCHESTRATOR_SOUL" "$SOUL_FILE"
-    echo "SOUL.md created: $SOUL_FILE"
+    echo "SOUL.md created:      $SOUL_FILE"
 fi
 
 # ---------------------------------------------------------------------------
@@ -126,6 +157,16 @@ else
     pip install pyyaml
 fi
 
+echo ""
+echo "Adversarial auditor (optional, recommended):"
+echo "  A second Claude Sonnet instance independently judges compliance"
+echo "  instead of having the primary model judge itself."
+echo ""
+echo "  Enable with:"
+echo "    pip install anthropic            # or pip install 'forge-protocol[vertex]'"
+echo "    export FORGE_AUDITOR_ENABLED=1"
+echo ""
+
 # ---------------------------------------------------------------------------
 # Done
 # ---------------------------------------------------------------------------
@@ -133,11 +174,12 @@ echo ""
 echo "=== Forge Protocol installed! ==="
 echo ""
 echo "Start Hermes and try:"
-echo "  /forge-mode    — Socratic thinking partner"
-echo "  /anvil-mode    — Rigorous editor/critic"
-echo "  /furnace-mode  — Idea stress-tester"
-echo "  /executor-mode — Normal AI (no friction)"
-echo "  /forge-status  — Check your cognitive sovereignty dashboard"
+echo "  /forge-mode     — Socratic thinking partner"
+echo "  /anvil-mode     — Rigorous editor/critic"
+echo "  /crucible-mode  — Idea stress-tester"
+echo "  /executor-mode  — Normal AI (no friction)"
+echo "  /forge-status   — Your cognitive-sovereignty dashboard"
+echo "  /forge-audit    — Weekly canary for measurable skill tracking"
 echo ""
-echo "The orchestrator SOUL will automatically classify tasks and"
-echo "warn you when you're delegating thinking work to the AI."
+echo "The orchestrator SOUL will classify tasks inline and warn you when"
+echo "you're delegating thinking work to the AI."

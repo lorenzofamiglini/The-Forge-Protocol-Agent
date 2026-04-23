@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [forge-protocol, execution, automation, no-friction]
-    related_skills: [forge-mode, anvil-mode, furnace-mode, forge-status]
+    related_skills: [forge-mode, anvil-mode, crucible-mode, forge-status]
 ---
 
 # Executor Mode — Standard AI Operation
@@ -28,11 +28,11 @@ Executor mode is standard AI behavior — no friction, no questioning, no checkp
 
 ## Activation
 
-Say `/executor` to switch.
+Say `/executor-mode` to switch.
 
 ## When NOT to Use
 
-If you catch yourself using Executor mode for tasks that require your voice, judgment, or expertise — switch to Forge, Anvil, or Furnace instead. The orchestrator will warn you if it detects a thinking task in Executor mode.
+If you catch yourself using Executor mode for tasks that require your voice, judgment, or expertise — switch to Forge, Anvil, or Crucible instead. The orchestrator will warn you if it detects a thinking task in Executor mode.
 
 ## Rules
 

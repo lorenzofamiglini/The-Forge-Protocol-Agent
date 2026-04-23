@@ -1,0 +1,643 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{abstract}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black,
+}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+\renewcommand{\abstractnamefont}{\normalfont\bfseries}
+\renewcommand{\abstracttextfont}{\normalfont\small}
+
+% --- Document ---
+\begin{document}
+
+\begin{center}
+    {\LARGE\bfseries §§The Forge Protocol v2}\\[0.4cm]
+    {\large An Anti-Deskilling Interaction Paradigm\\for AI-Augmented Knowledge Work}\\[0.8cm]
+    {\normalsize Lorenzo Famiglini}\\[0.2cm]
+    {\small \url{https://github.com/lorenzofamiglini/forge-protocol}}\\[0.6cm]
+    {\small April 2026}
+\end{center}
+
+\begin{abstract}
+A convergence of empirical research from 2024--2026 confirms that heavy LLM use
+degrades critical thinking, weakens neural connectivity during writing, reduces
+knowledge retention, and causes measurable clinical deskilling. The failure mode
+is well-characterised: users dump fragments into an LLM, accept completions, and
+outsource cognitive work---a textbook instance of the generation effect in
+reverse. This paper presents the Forge Protocol, a structured interaction
+framework grounded in cognitive science that defines four modes of LLM
+interaction (Forge, Anvil, Crucible, Executor), each with explicit rules about
+what the LLM does, what the user does, and when each mode applies. The protocol
+is designed to reverse AI-induced deskilling by exploiting the same cognitive
+mechanisms---generation effects, desirable difficulties, cognitive forcing
+strategies---that the standard LLM interaction pattern destroys. Design
+principles draw extensively on Cabitza et al.'s empirical program on human--AI
+collaboration protocols, frictional AI, and technology dominance measurement.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{Introduction}
+\label{sec:introduction}
+% ============================================================================
+
+A convergence of independent research programs has established that heavy use of
+large language models (LLMs) produces measurable cognitive degradation across
+multiple domains. The Microsoft/CMU study ($n=319$) found that approximately 40\%
+of AI-assisted tasks involved zero critical thinking
+\citep{lee2025critical}. The MIT Media Lab ($n=54$) demonstrated that LLM users
+showed the weakest brain connectivity across all EEG frequency bands during
+writing tasks \citep{kosmyna2025brain}. \citet{barcaui2025retention} documented a
+16\% reduction in knowledge retention at 45 days ($d=0.68$). And the Lancet
+reported a 20\% relative decline in adenoma detection rates among physicians after
+AI exposure \citep{lancet2025deskilling}.
+
+The common failure mode---dumping fragments into an LLM, accepting completions,
+outsourcing email and analysis---is a textbook instance of what cognitive
+scientists call the \textbf{generation effect in reverse}
+\citep{slamecka1978generation}: by letting the machine generate, the user skips
+the encoding process that builds durable skill.
+
+What follows is a concrete protocol to reverse this, grounded in the specific
+cognitive mechanisms at work and designed for practitioners who understand what an
+LLM is doing under the hood.
+
+% ============================================================================
+\section{Theoretical Foundations}
+\label{sec:foundations}
+% ============================================================================
+
+Eight independent research programs converge on the same conclusion. Understanding
+the mechanisms matters because the protocol's design exploits them.
+
+\subsection{The Generation Effect}
+
+\citet{slamecka1978generation} established that information actively produced is
+retained significantly better than information passively received. When a user
+lets an LLM write their email, they are in the ``read'' condition---they get
+fluent output but encode almost nothing. \citet{kosmyna2025brain} confirmed this
+neurologically: LLM users could not quote their own essays minutes after writing
+them, and their brain connectivity progressively weakened over four months of
+AI-assisted writing.
+
+\subsection{Desirable Difficulties}
+
+\citet{bjork1994desirable} showed that conditions slowing apparent
+performance---spacing, interleaving, retrieval practice, generation---are
+precisely what produce durable learning. LLMs eliminate every single one. The
+Wharton/PNAS randomised controlled trial \citep{bastani2025learning}
+demonstrated this causally: students with unrestricted GPT-4 scored \textbf{17\%
+lower} on unassisted exams than students with no AI at all, while perceiving no
+learning deficit. Students given a scaffolded GPT tutor---one that asked
+questions instead of giving answers---showed no harm. Deskilling is a design
+problem, not an inevitable consequence of AI use.
+
+\subsection{Automation Complacency}
+
+\citet{parasuraman2010complacency} showed that automation complacency operates
+through attention reallocation: when users trust the automation, they redirect
+cognitive resources elsewhere. Critically, their meta-analysis showed this effect
+\textbf{cannot be overcome by training, instructions, or awareness alone}---it
+requires structural intervention in the interaction itself. This is why
+willpower-based approaches (``I'll just be more careful'') reliably fail.
+
+\subsection{Bainbridge's Ironies of Automation}
+
+\citet{bainbridge1983ironies} identified the deepest problem: the better the
+automation gets, the rarer and more unusual the situations requiring independent
+human judgment become---and the less practised the human is at handling them.
+Users need \emph{more} skill as AI improves, not less, because they will only be
+called upon for the hard cases.
+
+\subsection{Cabitza's Deskilling Research Programme}
+
+\citet{cabitza2017unintended} launched a decade of empirical work showing how AI
+decision support erodes the very expertise it claims to augment. Three concepts
+from this programme are foundational for the Forge Protocol:
+
+\paragraph{Semiotic deskilling.} Introduced in \citet{cabitza2021cobra}, this
+refers to the erosion not just of cognitive ability but of \emph{interpretive
+capacity}---the ability to read situations, perceive subtle cues, and make sense
+of ambiguous information. When users stop writing their own emails, they lose not
+just writing fluency but the ability to read tone, anticipate interpretation, and
+notice when something is off. The skill atrophies at the semiotic level, not just
+the mechanical one.
+
+\paragraph{Epistemic sclerosis.} \citet{natali2025frictional} define this as the
+rigidification of knowledge processes when decision support systems are blindly
+trusted. In a team context, this is what happens when everyone fragment-dumps
+into the same LLM---the collective capacity for original thought calcifies. This
+extends deskilling from an individual phenomenon to an organisational one.
+
+\paragraph{The deskilling taxonomy.} \citet{natali2025taxonomy} provide the most
+comprehensive treatment, identifying four distinct types:
+\emph{cognitive/technical} (loss of reasoning and procedural skill),
+\emph{semiotic} (loss of interpretive capacity), \emph{social} (erosion of
+communication and interpersonal skills), and \emph{moral} (reduction of ethical
+judgment capacity). All four apply directly to LLM-assisted knowledge work.
+
+\subsection{Empirical Findings on Collaboration Protocols}
+
+In \citet{cabitza2023rams}, three human--AI collaboration approaches were tested
+across 12 radiologists and 44 ECG readers:
+
+\begin{description}[style=nextline]
+    \item[``Rams'' (AI-first)] The AI provides its recommendation first, the
+    human reviews. This is the standard LLM chat pattern---and it produced the
+    worst outcomes. Clinicians anchored to incorrect AI suggestions, their
+    independent reasoning collapsed, and automation bias dominated.
+
+    \item[``Hounds'' (human-first)] The human commits to their own assessment
+    first, then sees the AI's recommendation. This preserved independent judgment
+    while still capturing AI's value. It directly validates the protocol's
+    ``generate before you retrieve'' principle.
+
+    \item[``White Boxes'' (XAI-enhanced)] Adding explanations to AI output did
+    \emph{not} reliably improve decision quality---and in some cases worsened it.
+    This is the \textbf{white-box paradox}.
+\end{description}
+
+\citet{cabitza2025five} extended this across radiology, ECG, and endoscopy,
+finding that a \textbf{displacement protocol}---where human and AI work
+completely independently, then results are combined---consistently achieved
+87--89\% accuracy, outperforming AI-first and even human-first protocols.
+
+\subsection{The XAI Halo Effect}
+
+In \citet{cabitza2024explanations} (Best Paper Award, xAI 2024), it was
+demonstrated that when AI output comes with persuasive-looking explanations,
+users accept it \emph{more uncritically}, not less. A confident, well-structured
+LLM response feels like understanding. It is not. It is recognition masquerading
+as comprehension. This finding directly threatens naive approaches to
+anti-deskilling: Claude's articulate, well-reasoned responses are themselves a
+deskilling vector.
+
+\subsection{Convergence and Homogenisation}
+
+\citet{doshi2024creativity} showed AI-assisted outputs are \textbf{5\% more
+similar to each other} than human-only outputs. If a user's emails, ideas, and
+writing are starting to sound the same---or sound like the LLM---they have
+outsourced their voice. Cabitza's concept of epistemic sclerosis extends this to
+the team level.
+
+% ============================================================================
+\section{Design Principles}
+\label{sec:principles}
+% ============================================================================
+
+Eleven principles are ordered by importance and grounded in specific mechanisms.
+Each directly informs the protocol. Principles 1--7 derive from general cognitive
+science; principles 8--11 derive specifically from Cabitza's empirical programme.
+
+\begin{enumerate}
+    \item \textbf{Generate before you retrieve.} The generation effect means
+    producing your own version first---even a bad one---creates encoding that
+    passive consumption cannot. This is the single highest-leverage intervention.
+    Cabitza's ``Hounds'' protocol validates this empirically
+    \citep{cabitza2023rams}.
+
+    \item \textbf{Commit before you consult.} Croskerry's cognitive forcing
+    strategies \citep{croskerry2003forcing} require the clinician to form a
+    differential diagnosis \emph{before} looking at test results, because the act
+    of commitment activates analytical reasoning.
+
+    \item \textbf{Friction is the mechanism, not the obstacle.} Bjork's research
+    proves that the difficulty you want to remove is exactly what builds the
+    skill. \citet{cabitza2024frictional} formalise this as ``Frictional AI'' and
+    \citet{cabitza2019programmed} introduce ``programmed inefficiencies.''
+
+    \item \textbf{Separate thinking from executing.} Not all LLM interactions
+    carry deskilling risk. Formatting, translation, boilerplate---these are
+    execution tasks. Strategy, arguments, judgment calls---these are thinking
+    tasks where the AI must be a sparring partner, not a ghostwriter.
+
+    \item \textbf{Scaffold, don't substitute.} The Wharton/PNAS study showed
+    that scaffolded AI preserved learning while unscaffolded AI destroyed it.
+    \citet{cabitza2022open} formalise this as the ``Open, Multiple, Adjunct''
+    design principles.
+
+    \item \textbf{The AI critiques; you create.} Reversing the default
+    flow---where the user creates and the AI evaluates---preserves both the
+    generation effect and the user's ownership of the output.
+
+    \item \textbf{Explain back before you use.} Retrieval practice shows that
+    re-articulating information in one's own words is one of the strongest
+    consolidation mechanisms.
+
+    \item \textbf{Beware the explanation trap (the white-box paradox).}
+    AI explanations can increase automation bias rather than decrease it
+    \citep{cabitza2024explanations}.
+
+    \item \textbf{Design for judicial interaction, not oracular consultation.}
+    \citet{cabitza2025judicial} propose shifting from AI that delivers a single
+    authoritative answer to AI that presents contrasting perspectives.
+
+    \item \textbf{Measure technology dominance.} The AFOOT framework
+    \citep{cabitza2023dominion} provides metrics for measuring how much AI
+    influences decisions.
+
+    \item \textbf{Monitor for convergence.} \citet{doshi2024creativity} showed
+    AI-assisted outputs converge. If an entire organisation routes thinking
+    through the same LLM, collective knowledge rigidifies.
+\end{enumerate}
+
+% ============================================================================
+\section{The Forge Protocol: Four Modes of LLM Interaction}
+\label{sec:modes}
+% ============================================================================
+
+The core framework defines four distinct modes. Each has explicit rules about what
+the LLM does, what the user does, and when to use it. The metaphor: the user is
+the smith, the AI is the anvil. The anvil shapes nothing by itself---it provides
+resistance against which the smith does the work.
+
+The four modes map directly onto Cabitza's empirically tested collaboration
+protocols: Forge mode implements his judicial interaction paradigm; Anvil mode
+implements the Hounds protocol; Crucible mode implements frictional AI; and
+Executor mode is the only context where the Rams (AI-first) protocol is
+acceptable.
+
+\subsection{Mode 1 --- Forge (Thinking Partner)}
+
+\textbf{When to use:} Developing ideas, making decisions, working through complex
+problems, forming positions on ambiguous questions. This is the default mode for
+anything involving judgment.
+
+\textbf{What the LLM does:} Asks Socratic questions. Steelmans and attacks the
+user's positions. Surfaces assumptions. Identifies what the user has not
+considered. Never provides the answer, always provides the pressure. This
+implements Cabitza's judicial AI paradigm---presenting contrasting evidence rather
+than delivering a verdict.
+
+\textbf{What the user does:} States their position first. Answers the LLM's
+questions. Does the synthesis. Writes the conclusion.
+
+\textbf{The white-box paradox warning:} The LLM's responses in Forge mode will
+be articulate and well-reasoned. This is the XAI halo effect at work---the
+quality of the questioning can itself become a form of intellectual outsourcing if
+the user starts deferring to the framing of the questions rather than engaging
+with the substance.
+
+\paragraph{Questioning protocol (cognitive forcing functions).}
+\begin{enumerate}
+    \item \emph{Definitional:} ``What specifically do you mean by X?''
+    \item \emph{Evidential:} ``What's your strongest evidence for that?''
+    \item \emph{Adversarial:} ``What would someone who disagrees say, and why?''
+    \item \emph{Implication:} ``If that's true, what else must be true?''
+    \item \emph{Gap:} ``What haven't you considered yet?'' (list the gaps but do
+    not fill them)
+\end{enumerate}
+
+\paragraph{Judicial protocol.} When the user shares a position or draft:
+\begin{itemize}
+    \item Present the case \textsc{for} the user's position (steelman it)
+    \item Present the case \textsc{against} (identify the 2--3 most serious
+    weaknesses)
+    \item Present contrasting evidence on both sides---do not converge to a
+    single recommendation
+    \item Then ask: ``Given both sides, how do you weigh this? What's your
+    ruling?''
+\end{itemize}
+
+\paragraph{Frictional AI --- programmed inefficiencies.}
+\begin{itemize}
+    \item If the user gives a fragment and expects completion, refuse. Ask them to
+    write three full sentences first.
+    \item If the user accepts the LLM's framing too quickly, flag it: ``You
+    agreed with that fast. What's your independent reasoning?''
+    \item Periodically withhold assessment and ask the user to predict what the
+    LLM will say before it says it.
+\end{itemize}
+
+\subsection{Mode 2 --- Anvil (Critic and Editor)}
+
+\textbf{When to use:} After the user has written a full draft of anything. The
+LLM evaluates their work. It never rewrites; it identifies problems and asks the
+user to fix them.
+
+This mode implements Cabitza's empirically validated Hounds protocol
+\citep{cabitza2023rams}: the human produces their assessment first, the AI
+responds second. The key insight is that the order of interaction is not a minor
+UX choice---it fundamentally determines whether the human retains or surrenders
+cognitive autonomy.
+
+\textbf{What the LLM does:} Grades the draft against specific criteria.
+Identifies weaknesses in logic, tone, clarity, persuasiveness. Points to specific
+lines. Asks forcing questions about choices the user made. Returns the draft with
+annotations, not a replacement.
+
+\textbf{What the user does:} Writes the entire first draft themselves, even if
+rough. Reads the critique. Revises manually.
+
+\paragraph{Rating dimensions.}
+\begin{enumerate}
+    \item \emph{Clarity:} Can the reader understand this on first pass?
+    \item \emph{Precision:} Are claims specific and evidence-based?
+    \item \emph{Structure:} Does it flow logically? Is the most important point
+    first?
+    \item \emph{Tone:} Is it appropriate for the audience and purpose?
+    \item \emph{Persuasiveness:} Would this achieve its goal?
+    \item \emph{Concision:} What can be cut without losing meaning?
+\end{enumerate}
+
+\subsection{Mode 3 --- Crucible (Idea Development)}
+
+\textbf{When to use:} Brainstorming, exploring a problem space, developing
+strategy. The user generates ideas; the LLM stress-tests them.
+
+This mode implements Cabitza's frictional AI concept and his programmed
+inefficiencies design pattern \citep{cabitza2019programmed}. The core insight is
+that decision support systems should include deliberate friction features that
+prevent automatic reliance.
+
+The risk in LLM-assisted brainstorming is \textbf{premature convergence}: the LLM
+generates plausible-sounding ideas, the user anchors on them, and the possibility
+space collapses \citep{doshi2024creativity}.
+
+\paragraph{The Crucible discipline.}
+\begin{enumerate}
+    \item \textbf{Solo generation} (5--15 minutes, no LLM). Generate your own
+    ideas first. Aim for quantity over quality. At least 5 ideas, including ones
+    you think are bad.
+    \item \textbf{Commitment and ranking.} Before opening the LLM, rank your top
+    3 ideas and write one sentence explaining why each matters.
+    \item \textbf{Enter Crucible mode.} Share ideas with the LLM. Ask it to
+    steelman, attack, map gaps, and identify hidden assumptions.
+    \item \textbf{You fill the gaps.} The LLM identified blind spots but did not
+    fill them. The user does the work.
+    \item \textbf{Divergence check.} Ask: ``How is my current thinking different
+    from what a generic smart person would come up with?''
+\end{enumerate}
+
+\subsection{Mode 4 --- Executor (Automation)}
+
+\textbf{When to use:} Tasks where cognitive skill is not at stake: formatting,
+translation, data transformation, boilerplate generation, summarising documents
+already read, code scaffolding for well-understood patterns.
+
+This is the only mode where Cabitza's Rams (AI-first) protocol is acceptable. His
+research shows the Rams protocol leads to anchoring and automation bias when
+judgment is involved---but for mechanical tasks, those biases are irrelevant
+because there is no judgment to corrupt.
+
+\textbf{What the LLM does:} Whatever you tell it. No friction. Full automation.
+
+\textbf{The critical discipline:} Honestly classifying the task. If the user
+catches themselves using Executor mode for an email that requires judgment, an
+analysis that requires their opinion, or a document that carries their name---they
+must stop and switch modes.
+
+\subsection{Mode Selection Decision Rule}
+
+Before every LLM interaction, the user should ask: \textbf{``Am I about to think,
+or about to delegate thinking?''}
+
+\begin{itemize}
+    \item Does this task require my judgment, voice, or expertise? $\rightarrow$
+    Forge or Anvil
+    \item Am I developing or evaluating an idea? $\rightarrow$ Forge or Crucible
+    \item Have I already written a draft? $\rightarrow$ Anvil
+    \item Is this mechanical transformation of known inputs? $\rightarrow$
+    Executor
+    \item Am I too tired to think but the task requires thinking? $\rightarrow$
+    Do not use the LLM. Rest, then do it yourself. Fatigue + LLM = maximum
+    deskilling.
+\end{itemize}
+
+% ============================================================================
+\section{Replacing Fragment-Dumping: The 3-Before-1 Rule}
+\label{sec:fragment}
+% ============================================================================
+
+The failure mode of dumping fragments into the LLM and letting it complete is the
+highest-priority behaviour to replace. In Cabitza's terms, this is the purest
+form of semiotic deskilling: the user loses not just writing skill but the
+interpretive capacity to formulate their own thoughts into communicable language.
+
+\textbf{Old pattern:} Fragment $\rightarrow$ LLM completes $\rightarrow$ user
+accepts $\rightarrow$ done.
+
+\textbf{New pattern (the ``3-before-1'' rule):}
+\begin{enumerate}
+    \item \textbf{Write three full sentences yourself} before opening the chat.
+    Not bullets. Not fragments. Ugly, rough, grammatically imperfect sentences
+    that express your actual thought. This activates the generation effect.
+
+    \item \textbf{State your intent in one sentence} at the top of the chat: ``I'm
+    trying to [specific goal] for [specific audience] because [specific reason].''
+    This is Croskerry's cognitive forcing---committing to a frame before receiving
+    input.
+
+    \item \textbf{Paste your rough sentences} and ask the LLM (in Forge mode):
+    ``What's unclear? What am I assuming? What's the strongest objection?'' Do
+    \emph{not} ask it to ``expand'' or ``flesh out'' or ``turn this into.''
+
+    \item \textbf{You write the full version yourself,} incorporating the LLM's
+    challenges. Then switch to Anvil mode for critique.
+\end{enumerate}
+
+If the user cannot write three sentences about the topic, that is diagnostic
+information. It means they do not yet know what they think---and that is exactly
+when they most need to do the thinking themselves, not outsource it.
+
+% ============================================================================
+\section{Email Protocol: Reclaiming the Draft}
+\label{sec:email}
+% ============================================================================
+
+Email is the highest-frequency deskilling vector because it is low-stakes enough
+to feel like Executor territory but high-frequency enough to erode writing
+instincts through sheer volume. Cabitza's deskilling taxonomy helps classify
+what is at risk: even a ``simple'' email involves \emph{social} skill (reading the
+relationship), \emph{semiotic} skill (choosing register and tone), and sometimes
+\emph{moral} skill (deciding how candid to be). Only truly templated messages are
+purely technical.
+
+\textbf{For routine/low-stakes emails} (scheduling, acknowledgements, simple
+requests): Executor mode is fine.
+
+\textbf{For any email that requires judgment} (persuasion, bad news,
+cross-functional requests, anything to leadership):
+
+\begin{enumerate}
+    \item \textbf{Capture intent} (30 seconds, no LLM): To, Goal, Subtext,
+    Constraint.
+    \item \textbf{Write the ugly draft} (2--5 minutes, no LLM). Allow it to be
+    clumsy. The point is generation, not quality.
+    \item \textbf{Critique via Anvil.} The LLM rates and challenges your draft.
+    It does not rewrite.
+    \item \textbf{You revise.}
+    \item \textbf{Optional final pass:} ``Read this as [recipient]. What's your
+    emotional reaction? What might you misread?''
+\end{enumerate}
+
+% ============================================================================
+\section{The User's Constitution: Twelve Rules for Cognitive Sovereignty}
+\label{sec:constitution}
+% ============================================================================
+
+These personal disciplines create structural barriers that do not depend on
+willpower in the moment---which, per \citet{parasuraman2010complacency}, is the
+only intervention that actually works against automation complacency.
+
+\begin{enumerate}
+    \item \textbf{Always write before you prompt.} For any thinking task, produce
+    at least three rough sentences before engaging the LLM. No exceptions.
+
+    \item \textbf{Never accept the first completion.} If the LLM generates text
+    you plan to use, you must revise it substantively---change the structure, not
+    just word-swap.
+
+    \item \textbf{Explain back before you use.} After the LLM gives a complex
+    response, close the chat and articulate the key insight in your own words
+    before incorporating it.
+
+    \item \textbf{Name the mode before you type.} Every LLM session starts with a
+    conscious decision: Forge, Anvil, Crucible, or Executor.
+
+    \item \textbf{Maintain a ``done without AI'' list.} Keep a running log of
+    things completed without AI assistance each week.
+
+    \item \textbf{One AI-free writing block per week.} Minimum 45 minutes of
+    writing with no AI access.
+
+    \item \textbf{Read your sent emails.} Once a week, reread 10 sent emails. Do
+    they sound like you, or like the LLM?
+
+    \item \textbf{Don't use AI when tired.} Fatigue is when automation
+    complacency is strongest.
+
+    \item \textbf{Preserve struggle on things that matter to your identity.}
+    Protect skills across all four dimensions of
+    Cabitza's taxonomy---technical, semiotic, social, and moral.
+
+    \item \textbf{Track your prompts.} Count the ratio of ``write this for me''
+    to ``challenge me on this.'' The ratio is your dependency score
+    \citep{cabitza2023dominion}.
+
+    \item \textbf{When the LLM is clearly better, learn why.} Identify the
+    specific technique. The goal is skill transfer, not skill replacement.
+
+    \item \textbf{Treat discomfort as signal, not friction to eliminate.} The
+    moment of not-knowing-what-to-say-next is exactly when the user most needs to
+    stay with it.
+\end{enumerate}
+
+% ============================================================================
+\section{Self-Audit Practices}
+\label{sec:audit}
+% ============================================================================
+
+Deskilling is insidious precisely because it feels like efficiency.
+\citet{cabitza2023dominion} provide the theoretical basis for measurement; the
+following are the practical detection methods.
+
+\paragraph{Weekly canary check (5 minutes).}
+\begin{itemize}
+    \item Did I write anything substantial ($>$200 words) without AI this week?
+    \item Can I recall the main argument of the last document I produced?
+    \item Did I change my mind about anything this week, or did I just have the AI
+    validate my initial position?
+    \item Did any LLM output surprise me?
+    \item How many times did I override or substantially revise AI output?
+\end{itemize}
+
+\paragraph{Monthly stress test (30 minutes).} Write a one-page analysis, memo, or
+argument on a familiar topic with no AI assistance. Time yourself. Compare
+quality and speed to six months ago. This tests cognitive/technical deskilling.
+
+\paragraph{Monthly semiotic test (15 minutes).} Read 5 emails received this week.
+For each, write down: What is this person actually trying to say? What is the
+subtext? This tests semiotic skill---the interpretive capacity that atrophies when
+one stops engaging closely with language.
+
+\paragraph{Quarterly dependency audit.} Review LLM conversation history for the
+past month. Categorise each session as Forge/Anvil/Crucible/Executor. If Executor
+is $>$70\% and you are doing knowledge work, you are likely deskilling. The
+healthy ratio for a senior knowledge worker is roughly \textbf{40\%
+Forge/Crucible, 30\% Anvil, 30\% Executor}.
+
+\paragraph{Red flags that demand immediate correction:}
+\begin{itemize}
+    \item Opening a chat window before forming any thought about the task
+    \item Inability to write a professional email without AI assistance
+    \item Noticeably less structure or clarity in unassisted writing
+    \item Inability to explain your own AI-assisted work in meetings
+    \item Accepting AI-generated reasoning without independently agreeing
+    \item Colleagues' writing all sounding the same (organisational epistemic
+    sclerosis)
+\end{itemize}
+
+% ============================================================================
+\section{Where Cognitive Forcing Is Not Worth It}
+\label{sec:triage}
+% ============================================================================
+
+Applying this protocol to everything is a recipe for burnout and abandonment. The
+point is not to maximise difficulty---it is to preserve difficulty where it
+matters.
+
+\textbf{Full cognitive forcing} (Forge/Anvil/Crucible): Strategy documents,
+important emails, performance reviews, analysis that carries your name, decision
+memos, idea development, anything you will need to defend in a meeting.
+
+\textbf{Light cognitive forcing} (quick self-draft $\rightarrow$ AI critique):
+Medium-stakes emails, slide decks, documentation, internal communications where
+tone matters.
+
+\textbf{No cognitive forcing} (Executor, full automation): Calendar coordination,
+templated messages, data formatting, translation, code boilerplate, summarising
+documents already read, research summarisation for topics where you will do your
+own synthesis.
+
+\paragraph{The honest tradeoff.} This protocol will make you slower on tasks
+where you are currently fast because the AI is doing the work. That is the cost.
+The benefit is that in six months, you can still think without the AI---and you
+will be better at catching its mistakes because you have maintained the cognitive
+capacity to evaluate its output independently.
+
+The deepest finding from the Wharton study \citep{bastani2025learning} is that
+deskilling and productivity gains coexist invisibly. The students who were getting
+worse scored better on every assisted task. They never noticed. Neither will
+you---unless you build the measurement infrastructure to catch it.
+
+% ============================================================================
+\section*{Acknowledgements}
+% ============================================================================
+
+This protocol draws extensively on the empirical programme of Federico Cabitza and
+collaborators at the University of Milano-Bicocca. Their decade of work on
+human--AI collaboration, frictional AI design, and technology dominance
+measurement provides the scientific foundation for the interaction patterns
+described here.
+
+% ============================================================================
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

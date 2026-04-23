@@ -9,8 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes Agent](https://img.shields.io/badge/built%20on-Hermes%20Agent-purple.svg)](https://github.com/NousResearch/hermes-agent)
+[![Research paper](https://img.shields.io/badge/paper-RESEARCH.md-8A2BE2.svg)](RESEARCH.md)
 
-[Quick Start](#quick-start) | [Why This Exists](#why-this-exists) | [The 4 Modes](#the-4-modes) | [For Educators](#for-schools--universities) | [Architecture](#architecture)
+[Quick Start](#quick-start) | [Why This Exists](#why-this-exists) | [The 4 Modes](#the-4-modes) | [Measure Your Sovereignty](#measure-your-cognitive-sovereignty) | [For Educators](#for-schools--universities) | [Architecture](#architecture)
 
 </div>
 
@@ -43,7 +44,7 @@ Research calls this **deskilling** — the gradual erosion of human capabilities
 | Bjork & Bjork (1994) | "Desirable difficulties" — productive struggle improves long-term retention |
 | Parasuraman & Manzey (2010) | Automation complacency: humans stop verifying AI output after ~3 interactions |
 
-Forge Protocol is built on a simple idea from cognitive science: **the brain that struggles is the brain that learns**.
+Forge Protocol is built on a simple idea from cognitive science: **the brain that struggles is the brain that learns**. The full theoretical derivation, including the generation effect, desirable difficulties, automation complacency, and the XAI halo effect, is in [RESEARCH.md](RESEARCH.md) and the paper under [`docs/forge-protocol-paper.tex`](docs/forge-protocol-paper.tex).
 
 ---
 
@@ -79,7 +80,7 @@ Never rewrites.
 </td>
 <td width="25%" align="center">
 
-### Furnace
+### Crucible
 
 **Idea Stress-Tester**
 
@@ -87,7 +88,7 @@ Steelmans, then attacks.
 Maps blind spots.
 Never fills gaps.
 
-`/furnace-mode`
+`/crucible-mode`
 
 </td>
 <td width="25%" align="center">
@@ -112,13 +113,50 @@ For mechanical tasks only.
 
 **Anvil mode** — You paste your draft email. The AI rates it on 6 dimensions (clarity, precision, structure, tone, persuasiveness, concision), quotes the 3 weakest passages, and asks *"Where do you disagree with my assessment?"* It never offers rewrites.
 
-**Furnace mode** — You bring 3 ideas. The AI steelmans each one (strongest possible version), then attacks it (finds the fatal flaw). It maps what you haven't considered. It never suggests new ideas.
+**Crucible mode** — You bring 3 ideas. The AI steelmans each one (strongest possible version), then attacks it (finds the fatal flaw). It maps what you haven't considered. It never suggests new ideas.
 
 **Executor mode** — Formatting, translation, boilerplate, scheduling. Tasks that don't require your judgment. No friction, no questions.
 
 ### Automatic Task Detection
 
 The orchestrator SOUL classifies every message as a **thinking task** or an **execution task** inline — no extra tool call, no regex. If you're in Executor mode but send a thinking task ("help me write this important email"), the system warns you. No more accidental delegation.
+
+---
+
+## Measure Your Cognitive Sovereignty
+
+Most "anti-AI-dependency" tools are aspirational — they *tell* you to use AI less. Forge Protocol actually measures whether your independent skills are improving, flat, or drifting down.
+
+### The adversarial auditor
+
+The original design had one flaw: it asked the *same* LLM that generated a response to judge whether the response followed the mode rules. LLMs rubber-stamp themselves. Fixed:
+
+- Set `FORGE_AUDITOR_ENABLED=1` and the `forge_validate_input` / `forge_validate_output` tools route through an **independent Claude Sonnet instance** that judges compliance, quotes violations verbatim, and returns structured JSON the orchestrator treats as ground truth.
+- The auditor runs on its own config (`FORGE_AUDITOR_MODEL`, `FORGE_AUDITOR_BACKEND`, Vertex or direct API) so you can run the primary LLM and the auditor on different models, different accounts, or even different providers.
+
+### The canary — real skill tracking, not reminders
+
+A fixed set of prompts (writing, analysis, debugging, strategy, communication) with stable IDs. You answer one unassisted, the auditor scores it, and the result is stored across weeks so you can see the trend.
+
+```
+/forge-audit weekly
+# → prompt shown, 5-minute timer
+# → you submit your unassisted answer
+# → auditor returns:
+  clarity: 4    depth: 3    independence: 5     overall: 4.0
+  change vs. previous: +0.3   mean of last 5: 3.8   slope: +0.15/attempt
+```
+
+If the slope is flat or negative after a few weeks, the framework is failing you — and you'll hear that honestly instead of a "great job!" from a sycophantic model.
+
+| What it tracks | What the number means |
+|---|---|
+| **Clarity** (1-5) | Specific, readable, no filler hedging |
+| **Depth** (1-5) | Genuine reasoning, not templated surface |
+| **Independence** (1-5) | Your voice, not pasted AI patterns |
+| **Slope per attempt** | Linear trend across your full canary history |
+
+Storage lives at `~/.forge-state/canary_history.json`. Nothing leaves your machine except the single auditor API call that returns a score.
 
 ---
 
@@ -207,10 +245,10 @@ Forge Protocol was built with education in mind. It turns any LLM into a **Socra
 
 ### Self-Audit System
 
-Built-in tools to track cognitive health:
-- **Weekly canary** — Timed challenge without AI assistance. Are your skills declining?
-- **Monthly stress test** — Extended unassisted work. Can you still perform under pressure?
-- **Quarterly dependency audit** — Mode usage analysis. Are you living in Executor mode?
+The **measurable** part of the framework — see [Measure Your Cognitive Sovereignty](#measure-your-cognitive-sovereignty) above for the full write-up. Three cadences:
+- **Weekly canary** — Timed unassisted challenge. Auditor scores it on clarity, depth, and independence. Compared across weeks.
+- **Monthly stress test** — Extended unassisted work. Compared to your AI-assisted baseline.
+- **Quarterly dependency audit** — Mode usage analysis. Catches "living in Executor mode."
 
 ---
 
@@ -228,7 +266,7 @@ Hermes Agent + Forge Orchestrator SOUL
   |
   |-- Forge sub-agent   → Socratic questions only
   |-- Anvil sub-agent   → critique only, never rewrite
-  |-- Furnace sub-agent → stress-test only, never fill gaps
+  |-- Crucible sub-agent → stress-test only, never fill gaps
   |-- Executor          → normal AI, no restrictions
   |
   |-- forge_validate_output → did response follow mode rules?
@@ -249,20 +287,19 @@ forge-protocol/
 ├── lib/             # Pure Python core (no Hermes dependency)
 │   ├── modes.py     # YAML mode loader
 │   ├── state.py     # Session state management
-│   ├── validator.py # Input/output validation engine
+│   ├── validator.py # Validation rule retrieval for LLM evaluation
 │   ├── checkpoints.py # Metacognitive checkpoint scheduler
-│   ├── audit.py     # Self-audit system
-│   └── patterns.py  # Regex patterns for mode enforcement
+│   └── audit.py     # Self-audit system
 ├── modes/           # Portable YAML mode definitions
 │   ├── forge.yaml
 │   ├── anvil.yaml
-│   ├── furnace.yaml
+│   ├── crucible.yaml
 │   └── executor.yaml
 ├── souls/           # System prompts (Hermes SOUL.md format)
 │   ├── forge-orchestrator.md
 │   ├── forge.md
 │   ├── anvil.md
-│   ├── furnace.md
+│   ├── crucible.md
 │   └── executor.md
 ├── skills/          # Hermes slash commands (/forge-mode, etc.)
 ├── tests/           # Unit tests
@@ -295,19 +332,13 @@ behaviors:
   required:
     - "Break problems into sub-problems"
     - "Ask the student to solve each sub-problem"
+    - "Every response must contain at least one question"
   forbidden:
     - "Give the final answer directly"
     - "Skip steps in the reasoning"
 
-output_validation:
-  deny_patterns:
-    - id: "direct-answer"
-      pattern: "^(The answer is|Therefore,.*=)"
-      reason: "Mentor mode: guide, don't solve."
-  require_patterns:
-    - id: "contains-question"
-      pattern: "\\?"
-      reason: "Mentor mode: every response must ask a question."
+input_rules:
+  - "Student must attempt the problem before receiving guidance"
 
 metacognitive:
   checkpoint_interval: 3
@@ -357,16 +388,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ## FAQ
 
 **Q: Doesn't this just make AI slower and more annoying?**
-A: In Forge/Anvil/Furnace modes, yes — intentionally. That friction is the feature. When you need speed, switch to Executor mode. The protocol distinguishes between tasks that need your brain and tasks that don't.
+A: In Forge/Anvil/Crucible modes, yes — intentionally. That friction is the feature. When you need speed, switch to Executor mode. The protocol distinguishes between tasks that need your brain and tasks that don't.
 
 **Q: Can I use this without Hermes Agent?**
-A: Yes. The `lib/` directory is a standalone Python library with zero dependencies beyond PyYAML. Import `validate_input()`, `validate_output()` directly. The SOUL files in `souls/` can be copy-pasted into any LLM's system prompt.
+A: Yes. The `lib/` directory is a standalone Python library with zero dependencies beyond PyYAML. Import `get_input_rules()` and `get_output_rules()` to retrieve the natural-language rules for a mode, then have your own LLM evaluate compliance. The SOUL files in `souls/` can be copy-pasted into any LLM's system prompt.
 
 **Q: What LLMs does this work with?**
 A: Any LLM supported by Hermes Agent — Claude (via Vertex AI or API), GPT-4, Gemini, Llama, Mistral, and 100+ models via OpenRouter.
 
 **Q: Is this just a system prompt?**
-A: The system prompts (`souls/`) are the starting point, but Forge Protocol adds enforcement: input validation (did the student submit their own work?), output validation (did the AI accidentally give a direct answer?), metacognitive checkpoints (periodic "are you still thinking?" prompts), inline task classification (warning when delegating thinking tasks), and a self-audit system.
+A: The system prompts (`souls/`) are the starting point, but Forge Protocol adds enforcement: input validation (did the student submit their own work?), output validation (did the AI follow mode rules?), metacognitive checkpoints (periodic "are you still thinking?" prompts), inline task classification (warning when delegating thinking tasks), and a self-audit system. All validation is LLM-native — the orchestrator evaluates compliance using natural language rules, not regex.
 
 ---
 

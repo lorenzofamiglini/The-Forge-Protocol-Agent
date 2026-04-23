@@ -19,10 +19,11 @@ Test your unassisted skills to prevent AI dependency from eroding your capabilit
 ### Weekly Canary (`/forge-audit weekly`)
 
 A timed challenge you complete **without AI assistance**:
-- Writing, analysis, debugging, strategy, or communication task
+- A fixed set of writing, analysis, debugging, strategy, and communication prompts (stable IDs so you take the same one repeatedly)
 - 5-10 minute time limit
-- Track your comfort level and speed over time
-- Purpose: early warning if skills are declining
+- Your answer is scored by an independent Claude Sonnet auditor on clarity, depth, and independence
+- Scores are stored across weeks — you see trend, change vs. previous, mean of last 5, linear slope
+- Purpose: measure, not just remind. If your independence score drifts down, the canary catches it before you do.
 
 ### Monthly Stress Test (`/forge-audit monthly`)
 
@@ -41,13 +42,13 @@ Review your AI usage patterns across all sessions:
 
 ## How It Works
 
-1. Call `forge_get_state` to check audit status
-2. Present the appropriate challenge
-3. After completion, call `forge_log` to record the audit
-4. Compare results to previous audits
+1. Call `forge_get_state` to check audit status and which audits are overdue
+2. For a weekly canary: call `forge_canary_list` to show the user the fixed prompts (or pick one by id), present the challenge, and enforce the time limit by prompting the user to commit before submitting
+3. Submit the user's unassisted response via `forge_canary_submit(prompt_id, response)` — the adversarial auditor (Claude Sonnet) scores it and returns the full trend
+4. Show the user their last score, change vs. previous, and slope across attempts — be honest about what the data says
 
 ## Healthy Targets
 
-- **Mode split**: ~40% Forge/Furnace, ~30% Anvil, ~30% Executor
+- **Mode split**: ~40% Forge/Crucible, ~30% Anvil, ~30% Executor
 - **Canary trend**: stable or improving over 4+ weeks
 - **Violation rate**: decreasing over time (AI learning to stay in mode)

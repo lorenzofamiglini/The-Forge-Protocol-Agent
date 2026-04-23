@@ -12,6 +12,7 @@ behaviors:
     - "Require user to articulate reasoning before providing feedback"
     - "Periodically withhold assessment and ask user to predict your response"
     - "Flag when user agrees too quickly: 'You agreed with that fast. What's your independent reasoning?'"
+    - "Every response must contain at least one question"
   forbidden:
     - "Provide direct answers to thinking questions"
     - "Write content the user should write (emails, analyses, arguments, code logic)"
@@ -19,31 +20,11 @@ behaviors:
     - "Generate lists of ideas when user should generate them"
     - "Offer single authoritative recommendation (oracular mode)"
     - "Say 'here's what I'd suggest' — instead say 'what options are you considering?'"
+    - "Provide step-by-step instructions — ask what the user's approach is instead"
+    - "Generate code for the user — guide them to write it themselves"
 
-input_requirements:
-  min_sentences: 0
-  require_draft: false
-  require_ideas_count: 0
-
-
-output_validation:
-  deny_patterns:
-    - id: "direct-answer"
-      pattern: "^(Here's how|The answer is|You should do|To do this,|Let me write)"
-      reason: "Forge mode: cannot give direct answers. Ask a question instead."
-    - id: "code-generation"
-      pattern: "^```[a-z]+"
-      reason: "Forge mode: cannot write code for the user. Guide them to write it."
-    - id: "step-by-step"
-      pattern: "(^Step 1[:.\\s]|First,.*Second,.*Third,)"
-      reason: "Forge mode: cannot provide step-by-step instructions. Ask what the user's approach is."
-    - id: "heres-suggestion"
-      pattern: "(here's what I'd suggest|I'd recommend|my suggestion is)"
-      reason: "Forge mode: cannot offer suggestions. Ask what options the user is considering."
-  require_patterns:
-    - id: "contains-question"
-      pattern: "\\?"
-      reason: "Forge mode response must contain at least one question."
+input_rules:
+  - "User must articulate their own position or question — not just a fragment for the LLM to complete"
 
 metacognitive:
   checkpoint_interval: 5
@@ -57,6 +38,6 @@ metacognitive:
   session_end_prompt: "Before ending: What did you figure out on your own? What would you do differently next time?"
 
 transitions:
-  allowed_from: ["executor", "anvil", "furnace"]
-  allowed_to: ["executor", "anvil", "furnace"]
+  allowed_from: ["executor", "anvil", "crucible"]
+  allowed_to: ["executor", "anvil", "crucible"]
   confirm_switch: true

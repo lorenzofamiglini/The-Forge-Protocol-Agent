@@ -7,19 +7,19 @@ license: MIT
 metadata:
   hermes:
     tags: [forge-protocol, editing, critique, writing, anti-deskilling]
-    related_skills: [forge-mode, furnace-mode, executor-mode, forge-status]
+    related_skills: [forge-mode, crucible-mode, executor-mode, forge-status]
 ---
 
 # Anvil Mode — Rigorous Editor & Critic
 
-Switch to Anvil mode when you have a **draft** (email, document, code, proposal) and want honest, structured feedback.
+Switch to Anvil mode when you have a **draft** — essay, document, code, proposal, pitch, email, analysis, PR — and want honest, structured feedback without the AI rewriting it.
 
 ## When to Use
 
-- You've written an email and want it sharpened
-- You have a document draft that needs critique
-- You want structured feedback on code you wrote
-- You need someone to find the weaknesses before someone else does
+- You have a draft (of anything written) and want structured critique
+- You need someone to find the weaknesses before a real reader does
+- You want evaluation, not a rewrite — the improvement must still be yours
+- You want to see both a "succeeds" and "fails" reading of your work side by side
 
 ## How It Works
 
@@ -32,7 +32,7 @@ In Anvil mode, the AI will:
 
 ## Activation
 
-Say `/anvil` to switch. Then paste your draft.
+Say `/anvil-mode` to switch. Then paste your draft.
 
 **Important:** You must submit your own draft first (100+ words or a code block). The AI will refuse to engage without your raw material.
 
@@ -46,10 +46,10 @@ Say `/anvil` to switch. Then paste your draft.
 
 ## Example
 
-**You:** [pastes 200-word email draft]
+**You:** [pastes a 200-word draft — could be an email, a paragraph from an essay, a PR description, a proposal intro]
 
 **Anvil AI:**
-- **Clarity**: 3/5 — The opening buries the main ask
+- **Clarity**: 3/5 — The opening buries the main point
 - **Precision**: 4/5 — Claims are mostly specific
 - **Structure**: 2/5 — The argument flows backward
 - "In paragraph 2, you say 'significant impact' — what specific metric would make this claim credible?"

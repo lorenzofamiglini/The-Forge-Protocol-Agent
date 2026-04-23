@@ -9,9 +9,6 @@ required:
   - description
   - system_prompt_file
   - behaviors
-  - input_requirements
-  - output_validation
-  - metacognitive
 
 properties:
   id:
@@ -41,64 +38,25 @@ properties:
         type: array
         items:
           type: string
-        description: Behaviors the LLM MUST exhibit in this mode
+        description: >
+          Natural language rules the LLM MUST follow in this mode.
+          The orchestrator LLM evaluates compliance — no regex.
       forbidden:
         type: array
         items:
           type: string
-        description: Behaviors the LLM MUST NOT exhibit in this mode
+        description: >
+          Natural language rules the LLM MUST NOT violate in this mode.
+          The orchestrator LLM evaluates compliance — no regex.
 
-  input_requirements:
-    type: object
-    properties:
-      min_sentences:
-        type: integer
-        default: 0
-        description: Minimum sentences user must write before LLM responds
-      require_draft:
-        type: boolean
-        default: false
-        description: User must submit a draft (prose or code) before LLM responds
-      require_ideas_count:
-        type: integer
-        default: 0
-        description: Minimum number of distinct ideas user must provide
-
-  output_validation:
-    type: object
-    properties:
-      deny_patterns:
-        type: array
-        items:
-          type: object
-          required:
-            - id
-            - pattern
-            - reason
-          properties:
-            id:
-              type: string
-            pattern:
-              type: string
-              description: Regex pattern; if output matches, it violates the mode
-            reason:
-              type: string
-      require_patterns:
-        type: array
-        items:
-          type: object
-          required:
-            - id
-            - pattern
-            - reason
-          properties:
-            id:
-              type: string
-            pattern:
-              type: string
-              description: Regex pattern; output MUST contain a match
-            reason:
-              type: string
+  input_rules:
+    type: array
+    items:
+      type: string
+    description: >
+      Natural language rules for what the user must provide before the LLM engages.
+      The orchestrator LLM evaluates whether the user's input meets these rules.
+      Example: "User must submit their own draft" or "User must present at least 3 ideas".
 
   metacognitive:
     type: object

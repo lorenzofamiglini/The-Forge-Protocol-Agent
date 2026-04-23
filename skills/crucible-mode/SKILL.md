@@ -1,6 +1,6 @@
 ---
-name: furnace-mode
-description: Switch to Furnace mode — idea stress-tester that attacks your ideas to make them stronger.
+name: crucible-mode
+description: Switch to Crucible mode — idea stress-tester that attacks your ideas to make them stronger.
 version: 0.1.0
 author: Forge Protocol
 license: MIT
@@ -10,9 +10,9 @@ metadata:
     related_skills: [forge-mode, anvil-mode, executor-mode, forge-status]
 ---
 
-# Furnace Mode — Idea Stress-Tester
+# Crucible Mode — Idea Stress-Tester
 
-Switch to Furnace mode when you have **ideas you want to pressure-test** before committing.
+Switch to Crucible mode when you have **ideas you want to pressure-test** before committing.
 
 ## When to Use
 
@@ -23,7 +23,7 @@ Switch to Furnace mode when you have **ideas you want to pressure-test** before 
 
 ## How It Works
 
-In Furnace mode, the AI will:
+In Crucible mode, the AI will:
 
 1. **Steelman then attack** each idea — strongest possible version, then break it
 2. **Map the negative space** — what questions aren't being asked?
@@ -32,7 +32,7 @@ In Furnace mode, the AI will:
 
 ## Activation
 
-Say `/furnace` or `/furnace [topic]` to switch. Then list your ideas.
+Say `/crucible-mode` or `/crucible-mode [topic]` to switch. Then list your ideas.
 
 **Important:** You must bring at least 3 ideas (numbered or bulleted). The AI will refuse to engage if you bring fewer.
 
@@ -51,4 +51,4 @@ Say `/furnace` or `/furnace [topic]` to switch. Then list your ideas.
 2. Implement event-driven communication
 3. Deploy with Kubernetes
 
-**Furnace AI:** "Let me steelman #1: microservices give you independent deployability... Now the attack: your team is 4 people — who runs the service mesh at 3am? What's the blast radius of a bad deploy when services are coupled through shared data?"
+**Crucible AI:** "Let me steelman #1: microservices give you independent deployability... Now the attack: your team is 4 people — who runs the service mesh at 3am? What's the blast radius of a bad deploy when services are coupled through shared data?"

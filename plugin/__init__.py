@@ -1,7 +1,7 @@
 """Forge Protocol plugin for Hermes Agent.
 
-Registers 6 tools and lifecycle hooks that enforce the Forge Protocol's
-4 interaction modes (Forge, Anvil, Furnace, Executor) to protect human
+Registers 8 tools and lifecycle hooks that enforce the Forge Protocol's
+4 interaction modes (Forge, Anvil, Crucible, Executor) to protect human
 cognitive sovereignty when working with AI.
 """
 
@@ -23,18 +23,40 @@ logger = logging.getLogger(__name__)
 
 _PLUGIN_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _PLUGIN_DIR.parent
-_LIB_DIR = _REPO_ROOT / "lib"
-_MODES_DIR = _REPO_ROOT / "modes"
 
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
+# Modes directory resolution (in priority order):
+#   1. FORGE_MODES_DIR environment variable (explicit override)
+#   2. <plugin-dir>/modes/   — copy-mode install (install.sh default)
+#   3. <repo-root>/modes/    — dev/symlink mode, or pip-installed layout
+_MODES_OVERRIDE = os.environ.get("FORGE_MODES_DIR")
+if _MODES_OVERRIDE:
+    _MODES_DIR = Path(_MODES_OVERRIDE).expanduser().resolve()
+elif (_PLUGIN_DIR / "modes").is_dir():
+    _MODES_DIR = _PLUGIN_DIR / "modes"
+else:
+    _MODES_DIR = _REPO_ROOT / "modes"
+
+# lib/ import path — same two candidate locations as modes.
+_LIB_DIR_CANDIDATES = [_PLUGIN_DIR / "lib", _REPO_ROOT / "lib"]
+for _candidate in _LIB_DIR_CANDIDATES:
+    if _candidate.is_dir():
+        _parent = str(_candidate.parent)
+        if _parent not in sys.path:
+            sys.path.insert(0, _parent)
+        break
+else:
+    # Fallback: add repo root (original behavior) even if lib/ isn't present yet.
+    if str(_REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(_REPO_ROOT))
 
 # Import our pure-Python core
 from lib.checkpoints import check_checkpoint, get_session_end_prompt, messages_until_checkpoint
 from lib.modes import load_all_modes, Mode
 from lib.state import StateManager, Session
-from lib.validator import validate_input, validate_output
+from lib.validator import get_input_rules, get_output_rules
 from lib.audit import check_audit_reminders, compute_dependency_report
+from lib import auditor as adversarial_auditor
+from lib import canary as canary_module
 
 # ---------------------------------------------------------------------------
 # Shared state (initialized once per Hermes session)
@@ -80,19 +102,19 @@ def _get_mode(mode_id: str) -> Mode | None:
 VALIDATE_INPUT_SCHEMA = {
     "name": "forge_validate_input",
     "description": (
-        "Validate user input against the current mode's requirements. "
-        "Anvil requires a draft (100+ words), Furnace requires 3+ ideas, etc."
+        "Get the current mode's input requirements as natural language rules. "
+        "You (the LLM) evaluate whether the user's input meets these rules."
     ),
     "parameters": {
         "type": "object",
         "properties": {
             "user_input": {
                 "type": "string",
-                "description": "The user's message to validate.",
+                "description": "The user's message — included for context in the response.",
             },
             "mode": {
                 "type": "string",
-                "description": "Mode ID to validate against (forge/anvil/furnace/executor). Defaults to current session mode.",
+                "description": "Mode ID (forge/anvil/crucible/executor). Defaults to current session mode.",
             },
         },
         "required": ["user_input"],
@@ -102,19 +124,19 @@ VALIDATE_INPUT_SCHEMA = {
 VALIDATE_OUTPUT_SCHEMA = {
     "name": "forge_validate_output",
     "description": (
-        "Validate an LLM response against the current mode's output rules. "
-        "Forge forbids direct answers and code generation; Anvil forbids rewrites; etc."
+        "Get the current mode's behavioral rules (required and forbidden) for self-checking. "
+        "You (the LLM) evaluate whether a response complies with these rules."
     ),
     "parameters": {
         "type": "object",
         "properties": {
             "response": {
                 "type": "string",
-                "description": "The LLM response to validate.",
+                "description": "The LLM response to check — included for context.",
             },
             "mode": {
                 "type": "string",
-                "description": "Mode ID to validate against. Defaults to current session mode.",
+                "description": "Mode ID to check against. Defaults to current session mode.",
             },
         },
         "required": ["response"],
@@ -162,14 +184,14 @@ SET_MODE_SCHEMA = {
     "description": (
         "Switch the active Forge Protocol mode. Modes: "
         "forge (Socratic thinking partner), anvil (critic/editor), "
-        "furnace (idea stress-tester), executor (normal AI, no friction)."
+        "crucible (idea stress-tester), executor (normal AI, no friction)."
     ),
     "parameters": {
         "type": "object",
         "properties": {
             "mode": {
                 "type": "string",
-                "enum": ["forge", "anvil", "furnace", "executor"],
+                "enum": ["forge", "anvil", "crucible", "executor"],
                 "description": "The mode to switch to.",
             },
             "session_id": {
@@ -178,6 +200,50 @@ SET_MODE_SCHEMA = {
             },
         },
         "required": ["mode"],
+    },
+}
+
+CANARY_LIST_SCHEMA = {
+    "name": "forge_canary_list",
+    "description": (
+        "List the fixed set of canary prompts. The user answers these unassisted "
+        "to measure whether their independent skills are improving or drifting "
+        "over time. Each prompt has a stable id used when submitting a response."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "category": {
+                "type": "string",
+                "description": "Optional filter: writing, analysis, debugging, strategy, communication.",
+            },
+        },
+        "required": [],
+    },
+}
+
+CANARY_SUBMIT_SCHEMA = {
+    "name": "forge_canary_submit",
+    "description": (
+        "Submit the user's unassisted answer to a canary prompt. The adversarial "
+        "auditor scores the response on clarity, depth, and independence, stores "
+        "it, and returns the skill trend (last score, change vs. previous, "
+        "mean of last 5, linear slope across attempts). The attempt is stored "
+        "even if the auditor is disabled, so it can be scored later."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt_id": {
+                "type": "string",
+                "description": "The canary prompt id (e.g. 'writing_email_decline'). See forge_canary_list.",
+            },
+            "response": {
+                "type": "string",
+                "description": "The user's verbatim, unassisted response to the prompt.",
+            },
+        },
+        "required": ["prompt_id", "response"],
     },
 }
 
@@ -231,11 +297,27 @@ def _handle_validate_input(args: dict, **kw) -> str:
     if not mode:
         return json.dumps({"error": f"Unknown mode: {mode_id}"})
 
-    result = validate_input(user_input, mode)
+    rules = get_input_rules(mode)
+    audit = adversarial_auditor.audit_input(user_input, rules)
+    if audit is not None:
+        return json.dumps({
+            "mode": rules.mode,
+            "mode_name": rules.mode_name,
+            "input_rules": rules.rules,
+            "audit": audit.to_dict(),
+            "instruction": (
+                "An independent auditor has evaluated the user's input against the rules. "
+                "If audit.compliant is false, tell the user what's missing before engaging."
+            ),
+        })
     return json.dumps({
-        "passed": result.passed,
-        "message": result.message,
-        "mode": mode_id,
+        "mode": rules.mode,
+        "mode_name": rules.mode_name,
+        "input_rules": rules.rules,
+        "instruction": (
+            "Evaluate the user's input against these rules. "
+            "If the input doesn't meet a rule, tell the user what's needed."
+        ),
     })
 
 
@@ -254,15 +336,29 @@ def _handle_validate_output(args: dict, **kw) -> str:
     if not mode:
         return json.dumps({"error": f"Unknown mode: {mode_id}"})
 
-    result = validate_output(response, mode)
+    rules = get_output_rules(mode)
+    audit = adversarial_auditor.audit_output(response, rules)
+    if audit is not None:
+        return json.dumps({
+            "mode": rules.mode,
+            "mode_name": rules.mode_name,
+            "required_behaviors": rules.required_behaviors,
+            "forbidden_behaviors": rules.forbidden_behaviors,
+            "audit": audit.to_dict(),
+            "instruction": (
+                "An independent auditor has evaluated this response against the rules. "
+                "If audit.compliant is false, regenerate or amend to address the listed violations."
+            ),
+        })
     return json.dumps({
-        "passed": result.passed,
-        "message": result.message,
-        "violations": [
-            {"rule_id": v.rule_id, "reason": v.reason}
-            for v in result.violations
-        ],
-        "mode": mode_id,
+        "mode": rules.mode,
+        "mode_name": rules.mode_name,
+        "required_behaviors": rules.required_behaviors,
+        "forbidden_behaviors": rules.forbidden_behaviors,
+        "instruction": (
+            "Check this response against the mode rules. "
+            "If it violates any forbidden behavior or misses a required behavior, flag it."
+        ),
     })
 
 
@@ -358,6 +454,57 @@ def _handle_set_mode(args: dict, **kw) -> str:
     })
 
 
+def _handle_canary_list(args: dict, **kw) -> str:
+    category = args.get("category")
+    questions = canary_module.list_canary_questions()
+    if category:
+        questions = [q for q in questions if q.get("category") == category]
+    return json.dumps({"questions": questions})
+
+
+def _handle_canary_submit(args: dict, **kw) -> str:
+    prompt_id = args.get("prompt_id", "")
+    response = args.get("response", "")
+
+    if not prompt_id:
+        return json.dumps({"error": "prompt_id is required"})
+    if not response or not response.strip():
+        return json.dumps({"error": "response is required (non-empty)"})
+
+    try:
+        attempt, trend = canary_module.submit_canary(prompt_id, response)
+    except ValueError as e:
+        return json.dumps({"error": str(e)})
+
+    # Update audit timestamp (records that a canary was run)
+    if _current_session_id:
+        sm = _get_state_manager()
+        try:
+            sm.update_audit(_current_session_id, "canary")
+        except ValueError:
+            pass  # session not found — non-fatal
+
+    return json.dumps({
+        "prompt_id": prompt_id,
+        "attempt": {
+            "timestamp": attempt.timestamp,
+            "overall": attempt.overall,
+            "dimensions": attempt.dimensions,
+            "notes": attempt.notes,
+            "auditor_model": attempt.auditor_model,
+            "error": attempt.error,
+        },
+        "trend": {
+            "attempts": trend.attempts,
+            "last_score": trend.last_score,
+            "prev_score": trend.prev_score,
+            "change_vs_prev": trend.change_vs_prev,
+            "mean_last_5": trend.mean_last_5,
+            "slope_per_attempt": trend.slope_per_attempt,
+        },
+    })
+
+
 def _handle_log(args: dict, **kw) -> str:
     session_id = args.get("session_id")
     violation_type = args.get("violation_type")
@@ -432,7 +579,7 @@ def _on_session_end(**kwargs: Any) -> None:
 def _pre_tool_call(**kwargs: Any) -> dict | None:
     """Before each tool call, check if we should intervene.
 
-    In Forge/Anvil/Furnace modes, warn if the agent is about to write
+    In Forge/Anvil/Crucible modes, warn if the agent is about to write
     code or files (which might bypass the thinking-first requirement).
     """
     if not _current_session_id:
@@ -442,7 +589,7 @@ def _pre_tool_call(**kwargs: Any) -> dict | None:
     tool_name = kwargs.get("tool_name", "")
 
     # In thinking modes, flag direct code/file writes
-    if session.current_mode in ("forge", "anvil", "furnace"):
+    if session.current_mode in ("forge", "anvil", "crucible"):
         write_tools = {"write_file", "patch", "execute_code"}
         if tool_name in write_tools:
             return {
@@ -465,7 +612,7 @@ def register(ctx) -> None:
 
     TOOLSET = "forge"
 
-    # Register all 6 tools
+    # Register all tools
     tools = [
         ("forge_validate_input", VALIDATE_INPUT_SCHEMA, _handle_validate_input,
          "Validate input against mode requirements"),
@@ -477,6 +624,10 @@ def register(ctx) -> None:
          "Get current Forge Protocol state"),
         ("forge_set_mode", SET_MODE_SCHEMA, _handle_set_mode,
          "Switch Forge Protocol mode"),
+        ("forge_canary_list", CANARY_LIST_SCHEMA, _handle_canary_list,
+         "List canary prompts for skill tracking"),
+        ("forge_canary_submit", CANARY_SUBMIT_SCHEMA, _handle_canary_submit,
+         "Submit and score an unassisted canary response"),
         ("forge_log", LOG_SCHEMA, _handle_log,
          "Log interaction for audit trail"),
     ]
@@ -487,6 +638,8 @@ def register(ctx) -> None:
         "forge_checkpoint": "🧠",
         "forge_get_state": "📊",
         "forge_set_mode": "🔄",
+        "forge_canary_list": "🐤",
+        "forge_canary_submit": "📈",
         "forge_log": "📝",
     }
 
@@ -505,4 +658,4 @@ def register(ctx) -> None:
     ctx.register_hook("on_session_end", _on_session_end)
     ctx.register_hook("pre_tool_call", _pre_tool_call)
 
-    logger.info("Forge Protocol plugin registered: 6 tools, 3 hooks")
+    logger.info("Forge Protocol plugin registered: 8 tools, 3 hooks")
