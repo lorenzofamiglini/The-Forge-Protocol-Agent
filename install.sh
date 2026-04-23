@@ -186,7 +186,7 @@ if python3 -c "import yaml" 2>/dev/null; then
     echo "PyYAML: OK"
 else
     echo "Installing PyYAML..."
-    pip install pyyaml
+    python3 -m pip install pyyaml
 fi
 
 echo ""

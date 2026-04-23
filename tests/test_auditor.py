@@ -126,7 +126,9 @@ def test_audit_output_handles_malformed_json(monkeypatch):
     # Errors are non-blocking — compliant defaults to True so the tool call doesn't break
     assert result.compliant is True
     assert result.error is not None
-    assert "no JSON object" in result.error or "JSON" in result.error
+    # We return only the exception type name (no message body) to avoid
+    # leaking SDK error payloads — e.g. request headers — back to the caller.
+    assert result.error == "ValueError"
 
 
 def test_audit_input_skips_when_no_rules(monkeypatch):
