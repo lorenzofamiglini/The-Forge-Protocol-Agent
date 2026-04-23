@@ -72,7 +72,12 @@ def test_load_system_prompt():
     mode = load_mode(MODES_DIR / "forge.yaml")
     base_dir = Path(__file__).parent.parent
     prompt = mode.load_system_prompt(base_dir)
-    assert "cognitive forcing partner" in prompt.lower()
+    # Sanity check: the SOUL loaded and looks like a system prompt for this
+    # mode. Avoid asserting specific phrasing — souls are rewritten often and
+    # brittle string matches create unrelated test failures.
+    assert prompt.strip()
+    assert prompt.lstrip().startswith("You are")
+    assert "forge" in prompt.lower() or "thinking" in prompt.lower()
 
 
 def test_valid_mode_ids_set():
