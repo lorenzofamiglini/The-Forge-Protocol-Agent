@@ -32,13 +32,16 @@ def _call(handler, args=None):
 
 
 class TestValidateInputTool:
-    def test_anvil_rejects_short(self):
+    def test_anvil_returns_input_rules(self):
         result = _call(_handle_validate_input, {"user_input": "fix this", "mode": "anvil"})
-        assert result["passed"] is False
+        assert result["mode"] == "anvil"
+        assert len(result["input_rules"]) > 0
+        assert any("draft" in r.lower() for r in result["input_rules"])
 
-    def test_executor_accepts_anything(self):
+    def test_executor_returns_no_rules(self):
         result = _call(_handle_validate_input, {"user_input": "hi", "mode": "executor"})
-        assert result["passed"] is True
+        assert result["mode"] == "executor"
+        assert len(result["input_rules"]) == 0
 
     def test_invalid_mode(self):
         result = _call(_handle_validate_input, {"user_input": "test", "mode": "nonexistent"})
@@ -46,19 +49,22 @@ class TestValidateInputTool:
 
 
 class TestValidateOutputTool:
-    def test_forge_rejects_direct_answer(self):
+    def test_forge_returns_behavioral_rules(self):
         result = _call(_handle_validate_output, {
-            "response": "Here's how to solve this: first you need to do X",
+            "response": "test response",
             "mode": "forge",
         })
-        assert result["passed"] is False
+        assert result["mode"] == "forge"
+        assert len(result["required_behaviors"]) > 0
+        assert len(result["forbidden_behaviors"]) > 0
 
-    def test_executor_accepts_anything(self):
+    def test_executor_returns_no_forbidden(self):
         result = _call(_handle_validate_output, {
-            "response": "Here's the code:\n```python\nprint('hello')\n```",
+            "response": "test response",
             "mode": "executor",
         })
-        assert result["passed"] is True
+        assert result["mode"] == "executor"
+        assert len(result["forbidden_behaviors"]) == 0
 
 
 class TestSetModeTool:
@@ -119,7 +125,7 @@ class TestHermesRegistration:
         except ImportError:
             pytest.skip("hermes-agent not installed")
 
-    def test_registers_6_tools(self):
+    def test_registers_all_tools(self):
         from tools.registry import ToolRegistry
         from hermes_cli.plugins import PluginManager, PluginManifest, PluginContext
         from plugin import register
@@ -139,10 +145,10 @@ class TestHermesRegistration:
             register(ctx)
 
             forge_tools = [n for n in fresh_registry.get_all_tool_names() if n.startswith("forge_")]
-            assert len(forge_tools) == 6
             assert set(forge_tools) == {
                 "forge_validate_input", "forge_validate_output",
-                "forge_checkpoint", "forge_get_state", "forge_set_mode", "forge_log",
+                "forge_checkpoint", "forge_get_state", "forge_set_mode",
+                "forge_canary_list", "forge_canary_submit", "forge_log",
             }
         finally:
             reg_mod.registry = original

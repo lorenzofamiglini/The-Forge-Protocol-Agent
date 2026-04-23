@@ -6,6 +6,7 @@ import random
 import time
 from dataclasses import dataclass, field
 
+from .canary import CANARY_QUESTIONS  # re-exported for backwards compatibility
 from .modes import VALID_MODE_IDS
 from .state import Session, StateManager
 
@@ -31,7 +32,7 @@ class AuditReminder:
 class ModeRatios:
     forge: float = 0.0
     anvil: float = 0.0
-    furnace: float = 0.0
+    crucible: float = 0.0
     executor: float = 0.0
 
 
@@ -127,17 +128,17 @@ def compute_dependency_report(state_manager: StateManager) -> DependencyReport:
     ratios = ModeRatios(
         forge=round(mode_messages["forge"] / total_messages, 2),
         anvil=round(mode_messages["anvil"] / total_messages, 2),
-        furnace=round(mode_messages["furnace"] / total_messages, 2),
+        crucible=round(mode_messages["crucible"] / total_messages, 2),
         executor=round(mode_messages["executor"] / total_messages, 2),
     )
 
     # Assess health
-    thinking_ratio = ratios.forge + ratios.anvil + ratios.furnace
+    thinking_ratio = ratios.forge + ratios.anvil + ratios.crucible
     if ratios.executor > 0.7:
         assessment = (
             f"WARNING: {ratios.executor:.0%} of interactions are in Executor mode. "
             "This suggests heavy delegation of thinking tasks. "
-            "Target: ~40% Forge/Furnace, ~30% Anvil, ~30% Executor."
+            "Target: ~40% Forge/Crucible, ~30% Anvil, ~30% Executor."
         )
     elif thinking_ratio > 0.5:
         assessment = (
@@ -147,7 +148,7 @@ def compute_dependency_report(state_manager: StateManager) -> DependencyReport:
     else:
         assessment = (
             f"Mode split: Forge {ratios.forge:.0%}, Anvil {ratios.anvil:.0%}, "
-            f"Furnace {ratios.furnace:.0%}, Executor {ratios.executor:.0%}."
+            f"Crucible {ratios.crucible:.0%}, Executor {ratios.executor:.0%}."
         )
 
     return DependencyReport(
@@ -159,38 +160,12 @@ def compute_dependency_report(state_manager: StateManager) -> DependencyReport:
     )
 
 
-# Canary check question bank
-CANARY_QUESTIONS = [
-    {
-        "category": "writing",
-        "prompt": "Write a 150-word professional email declining a meeting invitation while maintaining the relationship.",
-        "time_limit_minutes": 5,
-    },
-    {
-        "category": "analysis",
-        "prompt": "Identify three potential failure modes of a system you work on. For each, explain the root cause and one mitigation.",
-        "time_limit_minutes": 10,
-    },
-    {
-        "category": "debugging",
-        "prompt": "Describe your mental model for debugging a production issue. What are the first 5 things you check, and why in that order?",
-        "time_limit_minutes": 8,
-    },
-    {
-        "category": "strategy",
-        "prompt": "Your team has twice as much work as capacity for the next quarter. Write a prioritization framework in 200 words.",
-        "time_limit_minutes": 10,
-    },
-    {
-        "category": "communication",
-        "prompt": "Write a brief message explaining a complex technical decision to a non-technical stakeholder. Topic: why a feature will be delayed.",
-        "time_limit_minutes": 5,
-    },
-]
-
-
 def get_canary_question(category: str | None = None) -> dict:
-    """Pick a random canary question, optionally filtered by category."""
+    """Pick a random canary question, optionally filtered by category.
+
+    Kept for backwards compatibility. Prefer ``lib.canary.submit_canary`` for
+    scored, tracked attempts with trend computation.
+    """
     pool = CANARY_QUESTIONS
     if category:
         pool = [q for q in pool if q["category"] == category]
