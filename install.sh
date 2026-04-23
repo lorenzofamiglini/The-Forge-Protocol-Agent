@@ -79,6 +79,22 @@ fi
 # ---------------------------------------------------------------------------
 # 4. Copy skills (always copied — Python's rglob doesn't follow symlinks on 3.13+)
 # ---------------------------------------------------------------------------
+# First pass: prune any previously-installed Forge Protocol skills. We detect
+# them by the `forge-protocol` tag in their SKILL.md frontmatter. This catches
+# renamed or retired skills (e.g. the Furnace → Crucible rename) that would
+# otherwise linger in ~/.hermes/skills/ as orphans.
+if [ -d "$HERMES_HOME/skills" ]; then
+    for existing_skill in "$HERMES_HOME/skills"/*/; do
+        existing_skill_file="$existing_skill/SKILL.md"
+        [ -f "$existing_skill_file" ] || continue
+        if grep -q "forge-protocol" "$existing_skill_file" 2>/dev/null; then
+            rm -rf "$existing_skill"
+            echo "Retired skill pruned: $(basename "$existing_skill")"
+        fi
+    done
+fi
+
+# Second pass: install the current skill set.
 for skill_dir in "$SCRIPT_DIR/skills"/*/; do
     skill_name="$(basename "$skill_dir")"
     [ -f "$skill_dir/SKILL.md" ] || continue
@@ -87,13 +103,14 @@ for skill_dir in "$SCRIPT_DIR/skills"/*/; do
     if [ -L "$skill_dest" ]; then
         rm "$skill_dest"
     fi
-    if [ -d "$skill_dest" ]; then
-        rm -rf "$skill_dest"
-    fi
 
     cp -r "$skill_dir" "$skill_dest"
     echo "Skill copied:         $skill_dest"
 done
+
+# Invalidate Hermes's skill snapshot cache so it re-scans on next launch.
+# (Safe no-op if the cache doesn't exist yet.)
+rm -f "$HERMES_HOME/.skills_prompt_snapshot.json"
 
 # ---------------------------------------------------------------------------
 # 5. Install/update SOUL.md
